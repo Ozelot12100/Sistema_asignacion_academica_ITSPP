@@ -1,0 +1,5 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=asignacion_academica;Uid=USUARIO;Pwd=CONTRASE;"
+  }
+}

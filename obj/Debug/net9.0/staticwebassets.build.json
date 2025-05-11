@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "lJpVnOyXPFMfCbCwMW21x6UOYHLudHElwOY1yHgaezg=",
+  "Source": "AsignacionAcademica.Api",
+  "BasePath": "_content/AsignacionAcademica.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
