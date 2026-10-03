@@ -8,13 +8,13 @@ namespace AsignacionAcademica.Api.Controllers
     {
         public static void MapGrupos(this WebApplication app)
         {
-            app.MapGet("/grupos", async () =>
+            app.MapGet("/grupos", async (ConexionDb conexion) =>
             {
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 return Results.Ok(await db.QueryAsync("SELECT * FROM Grupos"));
             });
 
-            app.MapPost("/grupos", async (GrupoDto dto) =>
+            app.MapPost("/grupos", async (GrupoDto dto, ConexionDb conexion) =>
             {
                 if (string.IsNullOrWhiteSpace(dto.nombre)
                     || dto.numero_alumnos <= 0
@@ -23,7 +23,7 @@ namespace AsignacionAcademica.Api.Controllers
                     || dto.semestre < 1 || dto.semestre > 8)
                     return Results.BadRequest("Todos los campos válidos y número de alumnos > 0.");
 
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 var id = await db.ExecuteScalarAsync<int>(@"
                     INSERT INTO Grupos(nombre,numero_alumnos,curso,turno,semestre)
                     VALUES(@nombre,@numero_alumnos,@curso,@turno,@semestre);
@@ -31,7 +31,7 @@ namespace AsignacionAcademica.Api.Controllers
                 return Results.Created($"/grupos/{id}", new { id });
             });
 
-            app.MapPut("/grupos/{id:int}", async (int id, GrupoDto dto) =>
+            app.MapPut("/grupos/{id:int}", async (int id, GrupoDto dto, ConexionDb conexion) =>
             {
                 if (string.IsNullOrWhiteSpace(dto.nombre)
                     || dto.numero_alumnos <= 0
@@ -40,7 +40,7 @@ namespace AsignacionAcademica.Api.Controllers
                     || dto.semestre < 1 || dto.semestre > 8)
                     return Results.BadRequest("Todos los campos válidos y número de alumnos > 0.");
 
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 await db.ExecuteAsync(@"
                     UPDATE Grupos
                     SET nombre=@nombre, numero_alumnos=@numero_alumnos,
@@ -50,9 +50,9 @@ namespace AsignacionAcademica.Api.Controllers
                 return Results.Ok("Grupo actualizado");
             });
 
-            app.MapDelete("/grupos/{id:int}", async (int id) =>
+            app.MapDelete("/grupos/{id:int}", async (int id, ConexionDb conexion) =>
             {
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 var usado = await db.QueryFirstOrDefaultAsync<int?>(
                     "SELECT id FROM Clases WHERE grupoId=@Id", new { Id = id });
                 if (usado != null)

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Dapper;
-using System.Text.RegularExpressions;
+using AsignacionAcademica.Api.Horarios;
 
 namespace AsignacionAcademica.Api.Controllers
 {
@@ -9,20 +9,18 @@ namespace AsignacionAcademica.Api.Controllers
     {
         public static void MapClases(this WebApplication app)
         {
-            var horaRegex = new Regex(@"^([01]\d|2[0-3]):[0-5]\d$");
-
-            app.MapGet("/clases", async () =>
+            app.MapGet("/clases", async (ConexionDb conexion) =>
             {
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 return Results.Ok(await db.QueryAsync("SELECT * FROM Clases"));
             });
 
-            app.MapPost("/clases", async (ClaseDto dto) =>
+            app.MapPost("/clases", async (ClaseDto dto, ConexionDb conexion) =>
             {
-                var error = await ValidarClase(dto, horaRegex);
+                var error = await ValidarClase(dto, conexion);
                 if (error is not null) return error;
 
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 var id = await db.ExecuteScalarAsync<int>(@"
                     INSERT INTO Clases(asignaturaId,profesorId,aulaId,grupoId,dia,horaInicio,horaFin)
                     VALUES(@asignaturaId,@profesorId,@aulaId,@grupoId,@dia,@horaInicio,@horaFin);
@@ -30,12 +28,12 @@ namespace AsignacionAcademica.Api.Controllers
                 return Results.Created($"/clases/{id}", new { id });
             });
 
-            app.MapPut("/clases/{id:int}", async (int id, ClaseDto dto) =>
+            app.MapPut("/clases/{id:int}", async (int id, ClaseDto dto, ConexionDb conexion) =>
             {
-                var error = await ValidarClase(dto, horaRegex, id);
+                var error = await ValidarClase(dto, conexion, id);
                 if (error is not null) return error;
 
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 await db.ExecuteAsync(@"
                     UPDATE Clases
                     SET asignaturaId=@asignaturaId, profesorId=@profesorId, aulaId=@aulaId,
@@ -44,27 +42,31 @@ namespace AsignacionAcademica.Api.Controllers
                 return Results.Ok("Clase actualizada");
             });
 
-            app.MapDelete("/clases/{id:int}", async (int id) =>
+            app.MapDelete("/clases/{id:int}", async (int id, ConexionDb conexion) =>
             {
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 await db.ExecuteAsync("DELETE FROM Clases WHERE id=@Id", new { Id = id });
                 return Results.Ok("Clase eliminada");
             });
         }
 
-        private static async Task<IResult?> ValidarClase(ClaseDto dto, Regex horaRegex, int? id = null)
+        private sealed class FilaFranja
+        {
+            public string? inicio { get; set; }
+            public string? fin { get; set; }
+        }
+
+        private static async Task<IResult?> ValidarClase(ClaseDto dto, ConexionDb conexion, int? id = null)
         {
             if (dto.asignaturaId <= 0 || dto.profesorId <= 0 || dto.aulaId <= 0
                 || dto.grupoId <= 0 || string.IsNullOrWhiteSpace(dto.dia)
-                || !horaRegex.IsMatch(dto.horaInicio) || !horaRegex.IsMatch(dto.horaFin))
-                return Results.BadRequest("Campos inválidos o formato de hora incorrecto.");
+                || !ReglasHorario.TryCrearFranja(dto.horaInicio, dto.horaFin, out var franja))
+                return Results.BadRequest("Campos inválidos, formato de hora incorrecto (HH:mm) u horaFin no posterior a horaInicio.");
 
-            var hi = int.Parse(dto.horaInicio.Split(':')[0]);
-            var hf = int.Parse(dto.horaFin.Split(':')[0]);
-            if (hf <= hi || hi < 7 || hf > 20)
-                return Results.BadRequest("Rango de horas permitido: 07:00–20:00 y horaFin > horaInicio.");
+            if (!ReglasHorario.DentroDeJornada(franja))
+                return Results.BadRequest("Rango de horas permitido: 07:00–20:00.");
 
-            using var db = Database.GetConnection();
+            using var db = conexion.Abrir();
 
             var check = async (string sql) => await db.QueryFirstOrDefaultAsync<int?>(sql, dto) is not null;
 
@@ -77,10 +79,13 @@ namespace AsignacionAcademica.Api.Controllers
             if (!await check("SELECT id FROM Asignaturas WHERE id=@asignaturaId"))
                 return Results.BadRequest("Asignatura no existe.");
 
+            //TIME_FORMAT normaliza a HH:mm tanto si la columna es TIME como si es texto, y así la comparación de cadenas es válida
             var traslape = await db.QueryFirstOrDefaultAsync<int?>(@"
                 SELECT id FROM Clases
                 WHERE (@id IS NULL OR id != @id)
-                  AND dia=@dia AND horaInicio=@horaInicio AND horaFin=@horaFin
+                  AND dia=@dia
+                  AND TIME_FORMAT(horaInicio,'%H:%i') < @horaFin
+                  AND TIME_FORMAT(horaFin,'%H:%i') > @horaInicio
                   AND (profesorId=@profesorId OR aulaId=@aulaId OR grupoId=@grupoId)",
                 new { dto.dia, dto.horaInicio, dto.horaFin, dto.profesorId, dto.aulaId, dto.grupoId, id });
             if (traslape is not null)
@@ -91,11 +96,15 @@ namespace AsignacionAcademica.Api.Controllers
             if (numAlu > cap)
                 return Results.BadRequest("El grupo tiene más alumnos que la capacidad del aula.");
 
-            var disp = await db.QueryFirstOrDefaultAsync<bool?>(@"
-                SELECT disponible FROM ProfesorDisponibilidad
-                WHERE profesorId=@profesorId AND dia=@dia
-                AND horaInicio=@horaInicio AND horaFin=@horaFin", dto);
-            if (disp is not true)
+            var filas = await db.QueryAsync<FilaFranja>(@"
+                SELECT TIME_FORMAT(horaInicio,'%H:%i') AS inicio, TIME_FORMAT(horaFin,'%H:%i') AS fin
+                FROM ProfesorDisponibilidad
+                WHERE profesorId=@profesorId AND dia=@dia AND disponible", dto);
+            var disponibles = new List<Franja>();
+            foreach (var f in filas)
+                if (ReglasHorario.TryCrearFranja(f.inicio, f.fin, out var d))
+                    disponibles.Add(d);
+            if (!ReglasHorario.EstaCubierta(franja, disponibles))
                 return Results.BadRequest("El profesor no está disponible en ese horario.");
 
             return null;

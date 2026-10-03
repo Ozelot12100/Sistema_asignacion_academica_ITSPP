@@ -8,20 +8,20 @@ namespace AsignacionAcademica.Api.Controllers
     {
         public static void MapAsignaturas(this WebApplication app)
         {
-            app.MapGet("/asignaturas", async () =>
+            app.MapGet("/asignaturas", async (ConexionDb conexion) =>
             {
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 return Results.Ok(await db.QueryAsync("SELECT * FROM Asignaturas"));
             });
 
-            app.MapPost("/asignaturas", async (AsignaturaDto dto) =>
+            app.MapPost("/asignaturas", async (AsignaturaDto dto, ConexionDb conexion) =>
             {
                 if (string.IsNullOrWhiteSpace(dto.nombre)
                     || dto.semestre < 1 || dto.semestre > 8
                     || dto.creditos <= 0)
                     return Results.BadRequest("Nombre texto, semestre 1–8, créditos > 0.");
 
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 var id = await db.ExecuteScalarAsync<int>(@"
                     INSERT INTO Asignaturas(nombre,semestre,creditos)
                     VALUES(@nombre,@semestre,@creditos);
@@ -29,14 +29,14 @@ namespace AsignacionAcademica.Api.Controllers
                 return Results.Created($"/asignaturas/{id}", new { id });
             });
 
-            app.MapPut("/asignaturas/{id:int}", async (int id, AsignaturaDto dto) =>
+            app.MapPut("/asignaturas/{id:int}", async (int id, AsignaturaDto dto, ConexionDb conexion) =>
             {
                 if (string.IsNullOrWhiteSpace(dto.nombre)
                     || dto.semestre < 1 || dto.semestre > 8
                     || dto.creditos <= 0)
                     return Results.BadRequest("Nombre texto, semestre 1–8, créditos > 0.");
 
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 await db.ExecuteAsync(@"
                     UPDATE Asignaturas
                     SET nombre=@nombre, semestre=@semestre, creditos=@creditos
@@ -45,9 +45,9 @@ namespace AsignacionAcademica.Api.Controllers
                 return Results.Ok("Asignatura actualizada");
             });
 
-            app.MapDelete("/asignaturas/{id:int}", async (int id) =>
+            app.MapDelete("/asignaturas/{id:int}", async (int id, ConexionDb conexion) =>
             {
-                using var db = Database.GetConnection();
+                using var db = conexion.Abrir();
                 var usada = await db.QueryFirstOrDefaultAsync<int?>(
                     "SELECT id FROM Clases WHERE asignaturaId=@Id", new { Id = id });
                 if (usada != null)
