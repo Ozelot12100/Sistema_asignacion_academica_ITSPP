@@ -4,7 +4,7 @@ Herramientas elegidas para el sistema, para qué sirve cada una, por qué se eli
 
 Criterio general: herramientas conocidas, con soporte largo y con mucha documentación, para que el equipo que herede el sistema pueda mantenerlo.
 
-Última actualización: 3 de octubre de 2026.
+Última actualización: 4 de octubre de 2026.
 
 ## Resumen
 
@@ -12,7 +12,7 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 |---|---|
 | Backend | C# con ASP.NET Core |
 | Acceso a datos | EF Core con migraciones (hoy: Dapper) |
-| Base de datos | SQL; motor por confirmar (el código heredado usa MySQL) |
+| Base de datos | MariaDB 11.8 |
 | Frontend | React, TypeScript y Vite |
 | Interfaz | Tailwind CSS y shadcn/ui |
 | Pruebas | xUnit en el backend; Vitest en el frontend |
@@ -42,7 +42,8 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 
 - **Para qué.** Leer y escribir en la base, y versionar el esquema.
 - **Por qué.** Cada cambio al esquema queda como un archivo de migración en el repositorio, reproducible en cualquier máquina. Se puede generar el modelo a partir de la base existente.
-- **Estado.** Sin adoptar. Hoy el código usa Dapper con SQL escrito a mano. El cambio se hará cuando se conozca el motor y el esquema de la base.
+- **Estado.** Sin adoptar. El código de horarios heredado usa Dapper con SQL escrito a mano. EF Core se adoptará al escribir la API de asistencias, una vez aprobado el esquema.
+- **Por verificar.** Que el proveedor de EF Core para MariaDB (Pomelo) sea compatible con la versión de .NET que se use.
 - **Descartado.** Seguir solo con Dapper: funciona, pero no versiona el esquema y cada consulta se mantiene a mano. Puede conservarse para consultas complejas puntuales.
 
 ### Documentación de la API: OpenAPI y Scalar
@@ -57,14 +58,15 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 
 ### Pruebas: xUnit
 
-- **Para qué.** Probar las reglas de horario y, más adelante, las rutas contra una base de prueba.
+- **Para qué.** Probar las reglas de negocio y las rutas contra una base de prueba.
 - **Por qué.** Es el estándar en .NET.
 
 ## Base de datos
 
-- **Motor.** Por confirmar. Se sabe que la base actual es SQL; el código heredado usa MySQL.
-- **Criterio.** Si la base ya está en MySQL, SQL Server o PostgreSQL, se conserva el motor. Los tres sirven para este sistema y cambiarlo no aporta nada.
-- **Esquema.** Versionado en `db/` mediante migraciones. Ver la decisión D8 en [decisiones.md](decisiones.md).
+- **Motor.** MariaDB 11.8.
+- **Por qué.** Es el motor de la base recibida y sirve bien para este sistema; cambiarlo no aporta nada. Es compatible con las herramientas de MySQL.
+- **Descartado.** PostgreSQL y SQL Server: igual de capaces, pero implicarían cambiar de motor sin ganar nada.
+- **Esquema.** Versionado en `db/`. Ver [modelo-de-datos.md](modelo-de-datos.md) y la decisión D13 en [decisiones.md](decisiones.md).
 
 ## Frontend
 
@@ -75,7 +77,7 @@ El frontend es una aplicación de una sola página: se compila a archivos estát
 | Herramienta | Para qué | Por qué |
 |---|---|---|
 | TypeScript | El lenguaje | Es JavaScript con tipos; detecta errores antes de ejecutar |
-| React | Construir la interfaz con componentes | Es lo que más probablemente conozca quien herede el sistema, y tiene las mejores librerías para la cuadrícula de horarios |
+| React | Construir la interfaz con componentes | Es lo que más probablemente conozca quien herede el sistema, y es el ecosistema con más librerías y documentación |
 | Vite | Servidor de desarrollo y compilación | Rápido y casi sin configuración |
 | Node.js (LTS) y npm | Ejecutar Vite, TypeScript y Tailwind | Solo para desarrollar y compilar; no se instala en el servidor |
 
@@ -85,8 +87,8 @@ El frontend es una aplicación de una sola página: se compila a archivos estát
 |---|---|---|
 | Tailwind CSS | Estilos y diseño adaptable | El diseño para celular, tableta y computadora sale con poco esfuerzo |
 | shadcn/ui | Componentes ya hechos (tablas, diálogos, formularios) | Son accesibles y su código queda dentro del proyecto, así que se personalizan con la identidad del ITSPP |
-| dnd-kit | Arrastrar y soltar clases en el horario | Funciona con mouse y con pantalla táctil |
-| CSS Grid propio | La cuadrícula semanal | Las librerías de calendario están pensadas para fechas, no para un horario semanal fijo, y sus vistas por aula o profesor suelen ser de pago |
+| CSS Grid propio | El mapa de equipos de cada laboratorio (libre, en uso, fuera de servicio) | Es una cuadrícula simple; no necesita una librería |
+| Recharts | Gráficas de los reportes de uso | Sencilla y hecha para React. Se agrega cuando se construyan los reportes |
 
 ### Datos y navegación
 
@@ -111,8 +113,8 @@ El frontend es una aplicación de una sola página: se compila a archivos estát
 |---|---|
 | Next.js | Aporta renderizado en servidor y posicionamiento en buscadores, que una aplicación interna con inicio de sesión no necesita, y obligaría a correr Node en producción |
 | Redux u otro estado global | TanStack Query cubre los datos del servidor; el resto es estado local |
-| Blazor (frontend en C#) | Menos librerías de interfaz, sobre todo para arrastrar y soltar en táctil; peor experiencia en celular; menos gente lo conoce. Sería la alternativa si quien haga el frontend solo supiera C# |
-| Razor Pages con HTMX | Simple y sin Node, bueno para catálogos, pero la cuadrícula de horarios habría que hacerla a mano en JavaScript |
+| Blazor (frontend en C#) | Menos librerías de interfaz; peor experiencia en celular; menos gente lo conoce. Sería la alternativa si quien haga el frontend solo supiera C# |
+| Razor Pages con HTMX | Simple y sin Node, bueno para catálogos, pero el mapa de equipos que se actualiza en vivo y la instalación en el celular habría que hacerlos a mano en JavaScript |
 | React sin compilar (desde un CDN) | Se pierden TypeScript, los tipos generados de la API y casi todas las librerías |
 | Flutter o React Native | Ver la decisión D5 en [decisiones.md](decisiones.md) |
 

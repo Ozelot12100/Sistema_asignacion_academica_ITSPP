@@ -4,7 +4,7 @@ Cómo se organiza el equipo y cómo entra un cambio al repositorio.
 
 **Estado: propuesta.** Las reglas técnicas (ramas, revisiones, secretos) están listas para usarse. La parte de organización (tablero, reuniones, reparto de responsabilidades) falta acordarla entre los cuatro integrantes.
 
-Última actualización: 3 de octubre de 2026.
+Última actualización: 4 de octubre de 2026.
 
 ## Equipo y responsabilidades
 
@@ -54,7 +54,7 @@ Si hace falta contexto, va en el cuerpo del mensaje, separado por una línea en 
 ## Cuándo una tarea está terminada
 
 - Compila sin advertencias nuevas.
-- Las pruebas pasan, y hay pruebas nuevas si se tocaron reglas de horario o permisos.
+- Las pruebas pasan, y hay pruebas nuevas si se tocaron reglas de negocio o permisos.
 - Se probó a mano el caso principal.
 - La documentación se actualizó si cambió una decisión, una ruta o la forma de ejecutar el proyecto.
 - Otra persona lo revisó.
@@ -63,15 +63,15 @@ Si hace falta contexto, va en el cuerpo del mensaje, separado por una línea en 
 
 ### Generales
 
-- Vocabulario del dominio en español, igual que lo nombra el instituto (profesor, aula, grupo, asignatura, clase, periodo).
-- Un solo estilo de nombres por capa. No mezclar `numero_alumnos` con `horaInicio`.
+- Vocabulario del dominio en español, igual que lo nombra el instituto (alumno, docente, laboratorista, laboratorio, equipo, asistencia, práctica).
+- Un solo estilo de nombres por capa: minúsculas con guion bajo en la base de datos, y el estilo propio de cada lenguaje en el código.
 - Los comentarios explican el porqué, no lo que el código ya dice.
 
 ### Backend
 
-- Las reglas de negocio van en clases propias, sin HTTP ni SQL, para poder probarlas (ver `Horarios/ReglasHorario.cs`).
+- Las reglas de negocio van en clases propias, sin HTTP ni SQL, para poder probarlas.
 - Las rutas validan la entrada, llaman a las reglas y responden. No contienen lógica de negocio.
-- Códigos de respuesta: 400 para datos inválidos, 401 sin sesión, 403 sin permiso, 404 si no existe, 409 para conflictos como un traslape.
+- Códigos de respuesta: 400 para datos inválidos, 401 sin sesión, 403 sin permiso, 404 si no existe, 409 para conflictos como un equipo ya ocupado.
 - Toda consulta SQL usa parámetros. Nunca se concatena texto del usuario.
 - Los cambios al esquema se hacen con migraciones versionadas.
 
@@ -85,7 +85,7 @@ Si hace falta contexto, va en el cuerpo del mensaje, separado por una línea en 
 
 El esfuerzo se concentra donde un error cuesta más:
 
-- **Reglas de horario** (traslapes, disponibilidad, capacidad, jornada): cobertura completa, incluyendo casos límite.
+- **Reglas de negocio** (registro de entrada y salida, disponibilidad de equipos, solicitudes de ingreso): cobertura completa, incluyendo casos límite.
 - **Permisos**: que cada rol pueda hacer solo lo que le corresponde.
 - **CRUD simples**: una prueba del caso normal basta.
 
