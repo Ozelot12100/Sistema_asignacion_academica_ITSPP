@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Asistencias.Api.Comun;
 using Asistencias.Api.Datos;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -8,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Asistencias.Api.Autenticacion;
 
 public record CredencialesDto(string? Email, string? Password);
+
+public record CambioPasswordDto(string? Actual, string? Nueva);
 
 public record UsuarioActualDto(int Id, string Nombre, string Apellido, string Email, Rol Rol);
 
@@ -32,6 +35,23 @@ public static class AutenticacionEndpoints
             var usuario = await db.Usuarios.AsNoTracking().SingleAsync(u => u.Id == principal.IdUsuario());
             return Results.Ok(ADto(usuario));
         }).RequireAuthorization();
+
+        grupo.MapPut("/password", async (
+            CambioPasswordDto dto, ClaimsPrincipal principal, AsistenciasDbContext db, IPasswordHasher<Usuario> hasher) =>
+        {
+            var usuario = await db.Usuarios.SingleAsync(u => u.Id == principal.IdUsuario());
+
+            var v = new Validador();
+            v.Si(string.IsNullOrEmpty(dto.Actual)
+                || hasher.VerifyHashedPassword(usuario, usuario.PasswordHash, dto.Actual) == PasswordVerificationResult.Failed,
+                "actual", "La contraseña actual no es correcta.");
+            ReglasPassword.Validar(v, "nueva", dto.Nueva);
+            if (v.Error is { } error) return error;
+
+            usuario.PasswordHash = hasher.HashPassword(usuario, dto.Nueva!);
+            await db.SaveChangesAsync();
+            return Results.NoContent();
+        }).RequireAuthorization().RequireRateLimiting(LimiteLogin);
     }
 
     private static async Task<IResult> Login(

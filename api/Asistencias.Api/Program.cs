@@ -1,9 +1,13 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Asistencias.Api.Alumnos;
 using Asistencias.Api.Autenticacion;
+using Asistencias.Api.Catalogos;
+using Asistencias.Api.Comun;
 using Asistencias.Api.Datos;
 using Asistencias.Api.Laboratorios;
+using Asistencias.Api.Usuarios;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +27,8 @@ builder.Services.AddDbContext<AsistenciasDbContext>((sp, options) =>
 builder.Services.AddSingleton<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options => Sesion.Configurar(options, builder.Environment.IsDevelopment()));
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(Politicas.Registrar);
+builder.Services.AddHttpContextAccessor();
 
 // Frena el adivinar contraseñas por fuerza bruta
 builder.Services.AddRateLimiter(options =>
@@ -41,6 +46,8 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower)));
+// Una petición mal formada responde 400 también en desarrollo, igual que en producción
+builder.Services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = false);
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
@@ -60,7 +67,13 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/api/salud", () => Results.Ok(new { estado = "ok" })).WithTags("Sistema");
 app.MapAutenticacion();
+app.MapUsuarios();
 app.MapLaboratorios();
+app.MapEquipos();
+app.MapCarreras();
+app.MapPeriodos();
+app.MapMaterias();
+app.MapAlumnos();
 
 await app.CrearAdminInicialAsync();
 

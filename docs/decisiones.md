@@ -27,6 +27,9 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 | D15 | Las reglas de negocio viven separadas de las rutas | Vigente |
 | D16 | El esquema se define en SQL; EF Core solo lo lee | Vigente |
 | D17 | Las pruebas corren contra una base MariaDB real | Vigente |
+| D18 | Reparto provisional de permisos por rol | Provisional |
+| D19 | La bitácora se llena sola | Vigente |
+| D20 | Lo que tiene historial se desactiva, no se borra | Vigente |
 
 ## D1. Se continúa el sistema existente en lugar de empezar de cero
 
@@ -178,6 +181,30 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Costo.** Para correr las pruebas hace falta Docker. Se considera aceptable.
 
+## D18. Reparto provisional de permisos por rol
+
+**Decisión.** Todos los roles consultan. El laboratorista además marca equipos fuera de servicio y da de alta y edita alumnos. Solo el administrador modifica catálogos, borra y gestiona usuarios. La tabla completa está en [estado-actual.md](estado-actual.md).
+
+**Por qué.** El instituto aún no define qué hace cada rol, pero sin algún reparto no se puede avanzar. Se eligió el más restrictivo que deja operar: quien atiende el laboratorio necesita registrar a un alumno que no está en la lista y reportar un equipo dañado, y nada más.
+
+**Por qué es fácil de cambiar.** Cada ruta declara su permiso en una línea, y hay pruebas que fijan el comportamiento actual.
+
+## D19. La bitácora se llena sola
+
+**Decisión.** Cada alta, cambio o baja se anota en la bitácora desde un solo punto del código, en la misma transacción que el cambio, con el usuario que lo hizo.
+
+**Por qué.** Si cada ruta tuviera que acordarse de anotar, tarde o temprano alguna no lo haría. Así no se puede olvidar.
+
+**Qué se anota.** La acción, la tabla, el registro y los nombres de los campos que cambiaron. No se guardan los valores, para que la bitácora nunca contenga contraseñas ni datos personales.
+
+**Qué no se anota.** Las asistencias, porque cada una ya es su propio registro.
+
+## D20. Lo que tiene historial se desactiva, no se borra
+
+**Decisión.** Usuarios, alumnos, laboratorios y carreras tienen un indicador de activo. La base impide borrar un registro del que dependen otros, y la API lo informa con un 409.
+
+**Por qué.** Borrar a un alumno borraría o dejaría huérfanas sus asistencias, y los reportes de semestres pasados dejarían de cuadrar.
+
 ## Decisiones abiertas
 
 | Tema | Qué falta para decidir |
@@ -185,7 +212,7 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 | Aprobación del esquema | Revisión del equipo |
 | Nombre del repositorio en GitHub | Acordarlo en el equipo |
 | Cómo se identifica el alumno al entrar | Respuesta del instituto |
-| Permisos de cada rol | Respuesta del instituto |
+| Permisos definitivos de cada rol | Respuesta del instituto |
 | Dónde se aloja el sistema | Confirmar servidor de la universidad o Hostinger, y su sistema operativo |
 | Subir a .NET 10 | Instalar el SDK en los equipos de desarrollo |
 | Quién lleva el frontend | Definirlo en el equipo |

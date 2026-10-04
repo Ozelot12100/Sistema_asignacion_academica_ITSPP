@@ -6,8 +6,6 @@ namespace Asistencias.Api.Autenticacion;
 
 public static class AdminInicial
 {
-    public const int LongitudMinimaPassword = 12;
-
     // Crea el primer administrador a partir de la configuración. Si ya hay uno, no hace nada.
     public static async Task CrearAdminInicialAsync(this WebApplication app)
     {
@@ -21,9 +19,9 @@ public static class AdminInicial
         if (await db.Usuarios.AnyAsync(u => u.Rol == Rol.Admin))
             return;
 
-        if (password.Length < LongitudMinimaPassword)
+        if (!ReglasPassword.EsValida(password))
             throw new InvalidOperationException(
-                $"AdminInicial:Password debe tener al menos {LongitudMinimaPassword} caracteres.");
+                $"AdminInicial:Password debe tener al menos {ReglasPassword.LongitudMinima} caracteres.");
 
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Usuario>>();
         var admin = new Usuario

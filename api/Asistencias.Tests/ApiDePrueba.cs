@@ -63,13 +63,21 @@ public class ApiDePrueba : WebApplicationFactory<Program>, IAsyncLifetime
         return usuario;
     }
 
-    public async Task<HttpClient> ClienteConSesionAsync(Rol rol = Rol.Laboratorista)
+    public async Task<HttpClient> ClienteConSesionAsync(Rol rol = Rol.Laboratorista) => (await SesionAsync(rol)).Cliente;
+
+    public async Task<(HttpClient Cliente, Usuario Usuario)> SesionAsync(Rol rol)
     {
         var usuario = await CrearUsuarioAsync(rol);
         var cliente = CreateClient();
         var respuesta = await cliente.PostAsJsonAsync("/api/auth/login", new CredencialesDto(usuario.Email, PasswordDePrueba));
         respuesta.EnsureSuccessStatusCode();
-        return cliente;
+        return (cliente, usuario);
+    }
+
+    public async Task<T> EnBaseAsync<T>(Func<AsistenciasDbContext, Task<T>> consulta)
+    {
+        using var scope = Services.CreateScope();
+        return await consulta(scope.ServiceProvider.GetRequiredService<AsistenciasDbContext>());
     }
 
     public async Task EnBaseAsync(Func<AsistenciasDbContext, Task> accion)

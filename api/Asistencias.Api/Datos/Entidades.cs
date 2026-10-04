@@ -6,6 +6,8 @@ public enum Rol { Admin, Laboratorista, Docente }
 
 public enum TipoUsuario { Estudiante, Docente, Invitado }
 
+public enum Turno { Matutino, Vespertino }
+
 public class Usuario
 {
     public int Id { get; set; }
@@ -18,6 +20,22 @@ public class Usuario
     public string? Departamento { get; set; }
     public bool Activo { get; set; } = true;
     public DateTime CreadoEn { get; set; } = DateTime.UtcNow;
+}
+
+public class Carrera
+{
+    public int Id { get; set; }
+    public required string Clave { get; set; }
+    public required string Nombre { get; set; }
+    public bool Activa { get; set; } = true;
+}
+
+public class Periodo
+{
+    public int Id { get; set; }
+    public required string Nombre { get; set; }
+    public DateOnly FechaInicio { get; set; }
+    public DateOnly FechaFin { get; set; }
 }
 
 public class Laboratorio
@@ -39,6 +57,31 @@ public class Equipo
     public string? Notas { get; set; }
 }
 
+public class Alumno
+{
+    public int Id { get; set; }
+    public required string Matricula { get; set; }
+    public required string Nombre { get; set; }
+    public required string Apellido { get; set; }
+    public int? CarreraId { get; set; }
+    public Carrera? Carrera { get; set; }
+    public byte? Semestre { get; set; }
+    public Turno? Turno { get; set; }
+    public string? Grupo { get; set; }
+    public bool Activo { get; set; } = true;
+    public DateTime CreadoEn { get; set; } = DateTime.UtcNow;
+}
+
+public class Materia
+{
+    public int Id { get; set; }
+    public required string Clave { get; set; }
+    public required string Nombre { get; set; }
+    public int? CarreraId { get; set; }
+    public Carrera? Carrera { get; set; }
+    public byte? Semestre { get; set; }
+}
+
 public class Asistencia
 {
     public long Id { get; set; }
@@ -50,4 +93,15 @@ public class Asistencia
     public string? InvitadoNombre { get; set; }
     public DateTime HoraEntrada { get; set; } = DateTime.UtcNow;
     public DateTime? HoraSalida { get; set; }
+}
+
+public class EntradaBitacora
+{
+    public long Id { get; set; }
+    public int? UsuarioId { get; set; }
+    public required string Accion { get; set; }
+    public string? Entidad { get; set; }
+    public string? EntidadId { get; set; }
+    public string? Detalles { get; set; }
+    public DateTime Fecha { get; set; } = DateTime.UtcNow;
 }
