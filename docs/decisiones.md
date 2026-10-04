@@ -25,6 +25,8 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 | D13 | Esquema de base de datos rediseñado | Propuesta |
 | D14 | Se conserva MariaDB | Vigente |
 | D15 | Las reglas de negocio viven separadas de las rutas | Vigente |
+| D16 | El esquema se define en SQL; EF Core solo lo lee | Vigente |
+| D17 | Las pruebas corren contra una base MariaDB real | Vigente |
 
 ## D1. Se continúa el sistema existente en lugar de empezar de cero
 
@@ -82,6 +84,12 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Descartado por ahora.** Tokens JWT: serían necesarios si otra aplicación externa consumiera la API.
 
+**Primer administrador.** Se crea al arrancar la API a partir de la configuración (correo y contraseña), solo si no existe ninguno. Así no hay contraseñas en los scripts de la base ni cuentas por defecto.
+
+**Protecciones.** Límite de intentos de inicio de sesión, misma respuesta para correo inexistente y contraseña incorrecta, y revisión en cada petición de que la cuenta siga activa y con el mismo rol.
+
+**Estado.** Implementado.
+
 **Pendiente.** Qué puede hacer exactamente cada rol, y si los alumnos deben tener cuenta.
 
 ## D8. La base de datos: se parte de la existente y se revisa al recibirla
@@ -118,7 +126,11 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Qué se conserva del trabajo previo.** La estructura del repositorio, la configuración por secretos, el manejo de errores, la documentación automática de la API, el proyecto de pruebas y la integración continua.
 
-**Pendiente.** Retirar el código de horarios y renombrar el proyecto.
+**Hecho.** El código de horarios se retiró (queda en el historial de git) y el proyecto .NET se renombró a `Asistencias`.
+
+**Por qué retirarlo.** Código que no se usa confunde a quien llega, sigue apareciendo en búsquedas y hay que mantenerlo compilando. Recuperarlo desde git cuesta un comando.
+
+**Pendiente.** Renombrar el repositorio en GitHub. No se hizo porque cambia la dirección para todo el equipo y debe acordarse.
 
 ## D13. El esquema de la base de datos se rediseña
 
@@ -146,13 +158,32 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Complemento.** Las reglas que protegen los datos también se hacen cumplir en la base (por ejemplo, que un equipo no tenga dos ocupantes), para que ningún error de la aplicación pueda romperlas.
 
+## D16. El esquema se define en SQL; EF Core solo lo lee
+
+**Decisión.** La fuente única del esquema son los archivos de `db/`. EF Core se usa para consultar y guardar, no para crear ni modificar tablas.
+
+**Por qué.** El esquema usa columnas calculadas y restricciones que ya están escritas y probadas en SQL. Quien administra la base trabaja en SQL y puede revisarlo directamente. Y con una sola fuente no hay riesgo de que el modelo en C# y la base real se separen sin que nadie lo note.
+
+**Cómo se detecta un desajuste.** Las pruebas levantan la base desde esos mismos archivos; si el código espera una columna que no existe, fallan.
+
+**Cambia respecto a lo planeado.** Antes se pensaba usar las migraciones de EF Core. Se descartan porque duplicarían el esquema en C#.
+
+**Regla.** Mientras el esquema sea una propuesta se edita `db/esquema.sql`. Una vez en uso con datos reales, cada cambio es un archivo de migración nuevo y numerado.
+
+## D17. Las pruebas corren contra una base MariaDB real
+
+**Decisión.** Las pruebas de la API crean una base nueva en un servidor MariaDB, la usan y la borran.
+
+**Por qué.** Buena parte de las reglas vive en la base (restricciones, llaves). Una base simulada en memoria no las aplicaría y daría pruebas que pasan con código que falla en producción.
+
+**Costo.** Para correr las pruebas hace falta Docker. Se considera aceptable.
+
 ## Decisiones abiertas
 
 | Tema | Qué falta para decidir |
 |---|---|
 | Aprobación del esquema | Revisión del equipo |
-| Qué hacer con el código de horarios | Confirmar que se retira |
-| Nombre del proyecto y del repositorio | Acordarlo en el equipo |
+| Nombre del repositorio en GitHub | Acordarlo en el equipo |
 | Cómo se identifica el alumno al entrar | Respuesta del instituto |
 | Permisos de cada rol | Respuesta del instituto |
 | Dónde se aloja el sistema | Confirmar servidor de la universidad o Hostinger, y su sistema operativo |

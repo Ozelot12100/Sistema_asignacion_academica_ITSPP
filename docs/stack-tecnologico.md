@@ -11,7 +11,7 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 | Parte | Herramienta |
 |---|---|
 | Backend | C# con ASP.NET Core |
-| Acceso a datos | EF Core con migraciones (hoy: Dapper) |
+| Acceso a datos | EF Core (proveedor Pomelo); esquema en SQL |
 | Base de datos | MariaDB 11.8 |
 | Frontend | React, TypeScript y Vite |
 | Interfaz | Tailwind CSS y shadcn/ui |
@@ -38,13 +38,15 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 - **Por qué.** Ya está hecho así y es suficiente para este tamaño.
 - **Descartado.** Arquitecturas de cuatro o cinco capas (Clean Architecture): excesivas para un sistema de este tamaño.
 
-### Acceso a datos: EF Core con migraciones
+### Acceso a datos: EF Core
 
-- **Para qué.** Leer y escribir en la base, y versionar el esquema.
-- **Por qué.** Cada cambio al esquema queda como un archivo de migración en el repositorio, reproducible en cualquier máquina. Se puede generar el modelo a partir de la base existente.
-- **Estado.** Sin adoptar. El código de horarios heredado usa Dapper con SQL escrito a mano. EF Core se adoptará al escribir la API de asistencias, una vez aprobado el esquema.
-- **Por verificar.** Que el proveedor de EF Core para MariaDB (Pomelo) sea compatible con la versión de .NET que se use.
-- **Descartado.** Seguir solo con Dapper: funciona, pero no versiona el esquema y cada consulta se mantiene a mano. Puede conservarse para consultas complejas puntuales.
+- **Para qué.** Leer y escribir en la base desde C#, con consultas revisadas por el compilador.
+- **Por qué.** Evita escribir y mantener SQL a mano en cada ruta, y protege contra inyección de SQL por diseño.
+- **Proveedor.** Pomelo.EntityFrameworkCore.MySql 9, compatible con MariaDB; y EFCore.NamingConventions, para que `HoraEntrada` en C# corresponda a `hora_entrada` en la base sin configurarlo columna por columna.
+- **Qué no hace.** No crea ni modifica tablas. El esquema se define en SQL; ver la decisión D16 en [decisiones.md](decisiones.md).
+- **Estado.** En uso.
+- **Por verificar al subir a .NET 10.** Que exista una versión de Pomelo compatible.
+- **Descartado.** Dapper con SQL a mano, que usaba el código heredado: más código que mantener y sin revisión del compilador. Las migraciones de EF Core: duplicarían el esquema en C#.
 
 ### Documentación de la API: OpenAPI y Scalar
 
@@ -53,12 +55,18 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 
 ### Errores: Problem Details
 
-- **Para qué.** Que todos los errores inesperados salgan con el mismo formato estándar.
-- **Pendiente.** Las validaciones heredadas aún responden con texto simple; se unificarán al reescribir las rutas.
+- **Para qué.** Que todos los errores, esperados o no, salgan con el mismo formato estándar.
+
+### Autenticación: cookies de ASP.NET Core
+
+- **Para qué.** Sesión por cookie, hash de contraseñas (`PasswordHasher`) y límite de intentos de inicio de sesión.
+- **Por qué.** Todo viene incluido en ASP.NET Core, sin librerías adicionales. Ver la decisión D7.
+- **Descartado.** ASP.NET Core Identity completo: trae sus propias tablas y funciones (confirmación de correo, doble factor) que el sistema no necesita hoy.
 
 ### Pruebas: xUnit
 
-- **Para qué.** Probar las reglas de negocio y las rutas contra una base de prueba.
+- **Para qué.** Probar las reglas de negocio y las rutas completas contra una base MariaDB real (decisión D17).
+- **Complemento.** Microsoft.AspNetCore.Mvc.Testing levanta la API dentro de la prueba, sin abrir un puerto.
 - **Por qué.** Es el estándar en .NET.
 
 ## Base de datos
@@ -123,6 +131,7 @@ El frontend es una aplicación de una sola página: se compila a archivos estát
 | Herramienta | Para qué | Estado |
 |---|---|---|
 | Git y GitHub | Control de versiones y revisión de cambios | En uso |
-| GitHub Actions | Compilar y probar cada cambio automáticamente | Configurado para la API |
+| GitHub Actions | Compilar y probar cada cambio automáticamente, con una MariaDB de prueba | Configurado para la API |
+| Docker | Base de datos local para desarrollo y pruebas | En uso |
 | Docker Compose | Levantar API, base de datos y proxy con HTTPS en el servidor | Pendiente; depende del sistema operativo del servidor |
 | Respaldo diario de la base | Poder recuperar los datos | Pendiente |

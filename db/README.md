@@ -9,7 +9,7 @@ Esquema del sistema de control de asistencias a laboratorios. Motor: MariaDB 11.
 
 El porqué de cada tabla y la comparación con la base recibida están en [docs/modelo-de-datos.md](../docs/modelo-de-datos.md).
 
-**Estado: propuesta**, pendiente de revisión del equipo.
+**Estado: propuesta**, pendiente de revisión del equipo. La API y sus pruebas ya trabajan sobre este esquema.
 
 ## Crear una base local de prueba
 

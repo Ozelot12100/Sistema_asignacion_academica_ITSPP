@@ -73,7 +73,7 @@ Si hace falta contexto, va en el cuerpo del mensaje, separado por una línea en 
 - Las rutas validan la entrada, llaman a las reglas y responden. No contienen lógica de negocio.
 - Códigos de respuesta: 400 para datos inválidos, 401 sin sesión, 403 sin permiso, 404 si no existe, 409 para conflictos como un equipo ya ocupado.
 - Toda consulta SQL usa parámetros. Nunca se concatena texto del usuario.
-- Los cambios al esquema se hacen con migraciones versionadas.
+- El esquema se cambia en los archivos SQL de `db/`, nunca a mano sobre una base. El mismo cambio incluye el ajuste del modelo en C# y sus pruebas.
 
 ### Frontend
 
@@ -82,6 +82,8 @@ Si hace falta contexto, va en el cuerpo del mensaje, separado por una línea en 
 - El formato lo aplican ESLint y Prettier.
 
 ## Pruebas
+
+Las pruebas de la API corren contra una base MariaDB real, que cada quien levanta con Docker (ver el [README](../README.md)).
 
 El esfuerzo se concentra donde un error cuesta más:
 
