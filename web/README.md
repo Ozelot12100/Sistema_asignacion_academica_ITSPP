@@ -40,6 +40,25 @@ Queda en `http://localhost:5173`. Las llamadas a `/api` se reenvían a la API, a
 
 `src/api/esquema.d.ts` se genera con `npm run generar-api`; no se edita a mano. Hay que volver a generarlo cada vez que cambia una ruta o un campo en la API. Para que una respuesta salga con su tipo, la ruta en C# debe declararla con `.Produces<T>()` o devolver el objeto directamente.
 
+## Cómo está organizado
+
+| Archivo o carpeta | Qué contiene |
+|---|---|
+| `src/App.tsx` | Las rutas y el encabezado de las pantallas que piden sesión |
+| `src/paginas/` | Una pantalla por archivo: `Registro`, `Entrar`, `Panel` y `Clase` |
+| `src/componentes/ui.tsx` | Botón, campo, tarjeta y aviso |
+| `src/componentes/CampoDeEquipo.tsx` | El campo para indicar la computadora o el equipo propio, que comparten el registro del alumno y el registro a mano |
+| `src/api/cliente.ts` | El cliente de la API y la traducción de sus errores a un mensaje para la persona |
+| `src/api/esquema.d.ts` | Los tipos generados. No se edita |
+| `src/sesion.ts` | Saber quién tiene la sesión, entrar y salir |
+| `src/formato.ts` | Fechas y horas en la hora del dispositivo |
+
+Convenciones: los nombres del código van en español, igual que en la API. Los datos del servidor se piden siempre con TanStack Query, nunca con `fetch` directo. La pantalla de la clase vuelve a pedir la lista cada 5 segundos mientras la clase está abierta; no hay conexión en tiempo real.
+
+## Qué se ha probado
+
+Hay 5 pruebas automáticas, todas de `mensajeDeError`. Las pantallas no tienen pruebas automáticas: se recorrieron en un navegador real con un guion de Playwright que no se guardó en el repositorio. Agregarlo es una de las tareas pendientes.
+
 ## Pendiente respecto al stack acordado
 
 - shadcn/ui: los componentes de `src/componentes/ui.tsx` son provisionales.

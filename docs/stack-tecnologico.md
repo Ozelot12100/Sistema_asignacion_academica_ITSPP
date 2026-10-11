@@ -4,7 +4,7 @@ Herramientas elegidas para el sistema, para qué sirve cada una, por qué se eli
 
 Criterio general: herramientas conocidas, con soporte largo y con mucha documentación, para que el equipo que herede el sistema pueda mantenerlo.
 
-Última actualización: 4 de octubre de 2026.
+Última actualización: 11 de octubre de 2026.
 
 ## Resumen
 
@@ -17,7 +17,7 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 | Interfaz | Tailwind CSS y shadcn/ui |
 | Pruebas | xUnit en el backend; Vitest en el frontend |
 | Integración continua | GitHub Actions |
-| Despliegue | Un servidor en la universidad; Docker Compose si es Linux |
+| Despliegue | Por definir: un servidor en el instituto o Hostinger. Ver la decisión D11 |
 
 ## Backend
 
@@ -34,8 +34,8 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 
 ### Estilo de la API: Minimal API organizada por módulo
 
-- **Para qué.** Definir las rutas con poco código, agrupadas por entidad (profesores, clases, etc.).
-- **Por qué.** Ya está hecho así y es suficiente para este tamaño.
+- **Para qué.** Definir las rutas con poco código, agrupadas por módulo. Cada carpeta de `api/Asistencias.Api/` es un módulo (`Alumnos`, `Cursos`, `Clases`, etc.) con sus rutas y, aparte, sus reglas de negocio. El índice está en [rutas-de-la-api.md](rutas-de-la-api.md).
+- **Por qué.** Es suficiente para este tamaño.
 - **Descartado.** Arquitecturas de cuatro o cinco capas (Clean Architecture): excesivas para un sistema de este tamaño.
 
 ### Acceso a datos: EF Core
@@ -52,6 +52,7 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 
 - **Para qué.** La API describe sola sus rutas y campos (`/openapi/v1.json`), con una página para probarlas (`/scalar/v1`). Solo disponible en desarrollo.
 - **Por qué.** Es la fuente de la que el frontend genera sus tipos; así no pueden desincronizarse.
+- **A tener en cuenta.** Una ruta que responde con `Results.Ok(...)` no declara sola el tipo de su respuesta. Para que el frontend lo reciba, la ruta debe devolver el objeto directamente o declarar `.Produces<T>()`. Hoy lo declaran las rutas que usa la aplicación web; las demás se irán declarando conforme se usen.
 
 ### Errores: Problem Details
 
@@ -73,12 +74,25 @@ Criterio general: herramientas conocidas, con soporte largo y con mucha document
 
 - **Motor.** MariaDB 11.8.
 - **Por qué.** Es el motor de la base recibida y sirve bien para este sistema; cambiarlo no aporta nada. Es compatible con las herramientas de MySQL.
+- **No sirve MySQL.** La API le pide a la base que devuelva el registro recién guardado con `RETURNING`, que existe en MariaDB y no en MySQL. Contra MySQL 8 falla la mayoría de las pruebas (42 de las 52 que había cuando se probó). Las versiones de MariaDB probadas son la 11.8 (integración continua) y la 11.5 (máquina de desarrollo).
 - **Descartado.** PostgreSQL y SQL Server: igual de capaces, pero implicarían cambiar de motor sin ganar nada.
 - **Esquema.** Versionado en `db/`. Ver [modelo-de-datos.md](modelo-de-datos.md) y la decisión D13 en [decisiones.md](decisiones.md).
 
 ## Frontend
 
 El frontend es una aplicación de una sola página: se compila a archivos estáticos que entrega el backend.
+
+### Qué está en uso y qué falta
+
+El frontend se inició el 10 de octubre de 2026 con lo mínimo para el flujo de clase. De lo elegido en este documento:
+
+| Estado | Herramientas |
+|---|---|
+| En uso | TypeScript 5.9, React 19, Vite 8, Tailwind CSS 4, React Router 7, TanStack Query 5, openapi-typescript 7, ESLint, Prettier y Vitest |
+| Agregado sobre lo planeado | openapi-fetch, el cliente que usa los tipos generados para que cada llamada a la API quede revisada por el compilador |
+| Pendiente | shadcn/ui (hoy hay componentes propios provisionales en `web/src/componentes/ui.tsx`), React Hook Form y Zod, Testing Library, vite-plugin-pwa y Recharts |
+
+TypeScript se queda en la versión 5 porque openapi-typescript 7 no admite la 6 ni la 7.
 
 ### Base
 
@@ -114,6 +128,7 @@ El frontend es una aplicación de una sola página: se compila a archivos estát
 | ESLint y Prettier | Mismo estilo de código para todos, aplicado automáticamente |
 | Vitest y Testing Library | Pruebas de componentes y de lógica |
 | vite-plugin-pwa | Que la aplicación se pueda instalar en el celular |
+| Playwright | Recorrer el flujo completo en un navegador real. Propuesto: ya se usó así una vez, con un guion suelto, y encontró un error que las demás pruebas no veían. Falta agregarlo al proyecto |
 
 ### Descartado en el frontend
 
@@ -131,7 +146,7 @@ El frontend es una aplicación de una sola página: se compila a archivos estát
 | Herramienta | Para qué | Estado |
 |---|---|---|
 | Git y GitHub | Control de versiones y revisión de cambios | En uso |
-| GitHub Actions | Compilar y probar cada cambio automáticamente, con una MariaDB de prueba | Configurado para la API |
-| Docker | Base de datos local para desarrollo y pruebas | En uso |
+| GitHub Actions | Compilar y probar cada cambio automáticamente, con una MariaDB de prueba | Configurado para la API y para la aplicación web |
+| Docker | Base de datos local para desarrollo y pruebas | Opcional: es la forma más simple de tener MariaDB 11.8, pero sirve cualquier servidor MariaDB instalado en la máquina |
 | Docker Compose | Levantar API, base de datos y proxy con HTTPS en el servidor | Pendiente; depende del sistema operativo del servidor |
 | Respaldo diario de la base | Poder recuperar los datos | Pendiente |

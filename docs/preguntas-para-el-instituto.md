@@ -6,7 +6,9 @@ En cada pregunta decimos qué vamos a suponer si no hay respuesta, para que solo
 
 Las entrega: Andrés. Las respuestas se anotan aquí mismo, debajo de cada pregunta.
 
-Última actualización: 10 de octubre de 2026.
+**Estado.** Se le entregaron a Andrés el 10 de octubre de 2026, en Word y PDF, para que las pase por mensaje o las pregunte en persona. Aún no hay respuestas. Después de entregarlas se resolvió la pregunta 2, así que ya no hay que hacerla.
+
+Última actualización: 11 de octubre de 2026.
 
 ## Cómo va a funcionar el sistema
 
@@ -23,6 +25,7 @@ Si algo de esto no corresponde a cómo quieren trabajar, es lo primero que neces
 **1. ¿Dónde se va a instalar el sistema: en un servidor dentro del instituto o en un servicio en internet (Hostinger)?**
 Si está en internet, un alumno podría registrar su asistencia desde su casa y tendríamos que agregar un código que el docente muestre en el aula.
 *Si no hay respuesta:* supondremos que estará en internet y agregaremos el código.
+*Lo que creemos, sin confirmar:* David entiende que se instalará en Hostinger, pero también que los alumnos solo podrán conectarse dentro del instituto. Las dos cosas no pueden ser ciertas a la vez.
 
 Respuesta:
 
@@ -50,6 +53,7 @@ Respuesta:
 
 **6. ¿Cada laboratorista atiende siempre el mismo laboratorio, o cualquiera?**
 *Si no hay respuesta:* cualquier laboratorista podrá atender cualquier laboratorio.
+*Lo que creemos, sin confirmar:* que cada laboratorista atiende un laboratorio fijo.
 
 Respuesta:
 
@@ -85,6 +89,7 @@ Respuesta:
 
 **10. ¿El número de control de los alumnos siempre tiene 8 dígitos, como 23303080?**
 *Si no hay respuesta:* se aceptará cualquier número de control, sin revisar su formato.
+*Lo que creemos, sin confirmar:* que sí, siempre son 8 dígitos.
 
 Respuesta:
 

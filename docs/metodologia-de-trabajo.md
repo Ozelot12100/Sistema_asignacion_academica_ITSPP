@@ -4,18 +4,20 @@ Cómo se organiza el equipo y cómo entra un cambio al repositorio.
 
 **Estado: propuesta.** Las reglas técnicas (ramas, revisiones, secretos) están listas para usarse. La parte de organización (tablero, reuniones, reparto de responsabilidades) falta acordarla entre los cuatro integrantes.
 
-Última actualización: 10 de octubre de 2026.
+Última actualización: 11 de octubre de 2026.
 
 ## Equipo y responsabilidades
 
 | Área | Responsable |
 |---|---|
-| Backend (API y base de datos) | Ozelot12100 |
-| Frontend | Por definir |
-| Contacto con el instituto | Por definir |
+| Backend (API y base de datos) | David (Ozelot12100) |
+| Frontend | David, por ahora; lo inició el 10 de octubre de 2026 |
+| Contacto con el instituto | Andrés: lleva las preguntas al personal y trae las respuestas |
 | Despliegue y servidor | Por definir |
 
-Cada área tiene un responsable, pero cualquiera puede proponer cambios en cualquier parte mediante una revisión.
+David es quien desarrolla la mayor parte del sistema y quien decide lo técnico; Andrés, Jorge y Tadeo apoyan. Cualquiera puede proponer cambios en cualquier parte mediante una revisión.
+
+Las preguntas al instituto se reúnen en [preguntas-para-el-instituto.md](preguntas-para-el-instituto.md), y ahí mismo se anotan las respuestas con su fecha.
 
 ## Organización del trabajo
 
@@ -78,12 +80,17 @@ Si hace falta contexto, va en el cuerpo del mensaje, separado por una línea en 
 ### Frontend
 
 - TypeScript en modo estricto, sin `any`.
-- Los tipos de la API se generan; no se escriben a mano.
+- Los tipos de la API se generan; no se escriben a mano. Si un cambio toca una ruta o un campo de la API, el mismo cambio incluye volver a generarlos (`npm run generar-api`).
+- Los mensajes que ve la persona salen de la API, en español; el frontend no los reescribe.
 - El formato lo aplican ESLint y Prettier.
 
 ## Pruebas
 
-Las pruebas de la API corren contra una base MariaDB real, que cada quien levanta con Docker (ver el [README](../README.md)).
+Las pruebas de la API corren contra una base MariaDB real, que cada quien levanta con Docker o con un MariaDB instalado en su máquina (ver el [README](../README.md)). Las del frontend corren con `npm test` en `web/`.
+
+Antes de subir un cambio se corren las dos, más `npm run lint` y `npm run build` si se tocó el frontend. La integración continua repite lo mismo en GitHub.
+
+Lo que cambia una pantalla se prueba además a mano en el navegador, con la API corriendo: las pruebas automáticas del frontend todavía no recorren las pantallas.
 
 El esfuerzo se concentra donde un error cuesta más:
 

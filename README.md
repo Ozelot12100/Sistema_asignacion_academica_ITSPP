@@ -17,6 +17,7 @@ El repositorio todavía se llama `Sistema_asignacion_academica_ITSPP` por el pro
 
 - [Guía para asistentes (CLAUDE.md)](CLAUDE.md): contexto, stack y pautas para Claude Code / Antigravity.
 - [Estado actual](docs/estado-actual.md): qué funciona y qué falta.
+- [Rutas de la API](docs/rutas-de-la-api.md): todas las rutas, quién puede usar cada una y cómo preparar una clase desde cero.
 - [Modelo de datos](docs/modelo-de-datos.md): qué hace el sistema y cómo queda la base de datos.
 - [Preguntas para el instituto](docs/preguntas-para-el-instituto.md): lo que falta que responda el personal para poder continuar.
 - [Decisiones del proyecto](docs/decisiones.md): qué se decidió y por qué.
@@ -25,7 +26,7 @@ El repositorio todavía se llama `Sistema_asignacion_academica_ITSPP` por el pro
 
 ## Cómo ejecutarlo en tu máquina
 
-Requisitos: SDK de .NET 9 y Docker.
+Requisitos: SDK de .NET 9, Node.js 24 y un servidor MariaDB. Lo más simple para la base es Docker, que es lo que usan los pasos de abajo; sin Docker, ver [db/README.md](db/README.md).
 
 1. Levanta la base de datos y carga el esquema, desde la raíz del repositorio:
 
@@ -52,15 +53,33 @@ Requisitos: SDK de .NET 9 y Docker.
 
 Si no usas Docker, sirve cualquier servidor MariaDB (no MySQL: la API usa `RETURNING`). Ajusta el puerto y la contraseña en la cadena de conexión.
 
+La base queda con un laboratorio y sus 25 equipos, pero sin docentes, cursos ni alumnos. Para dejarla lista y probar una clase completa, sigue "Preparar una clase desde cero" en [docs/rutas-de-la-api.md](docs/rutas-de-la-api.md).
+
+### Cómo se usa
+
+1. El docente entra en `http://localhost:5173/entrar` y abre su clase desde el panel.
+2. Cada alumno abre `http://localhost:5173` en una computadora o en su teléfono, escribe su número de control e indica qué computadora ocupa o que trae su propio equipo.
+3. El docente ve llegar a los alumnos en la lista y, al terminar, cierra la clase. Con eso se registra la salida de todos.
+
 ## Pruebas
 
-Desde `api/`, con el contenedor de la base en marcha:
+De la API, desde `api/`, con el servidor de la base en marcha:
 
 ```
 dotnet test
 ```
 
-Las pruebas crean una base de datos nueva en ese servidor, la usan y la borran. Si tu servidor de pruebas no es `localhost:3306` con `root` / `local`, indícalo en la variable de entorno `ASISTENCIAS_TEST_DB`.
+Las pruebas crean una base de datos nueva en ese servidor, la usan y la borran. Si tu servidor de pruebas no es `localhost:3306` con `root` / `local`, indícalo en la variable de entorno `ASISTENCIAS_TEST_DB`, por ejemplo `Server=localhost;Port=3307;Uid=root;Pwd=;`.
+
+De la aplicación web, desde `web/`:
+
+```
+npm test
+npm run lint
+npm run build
+```
+
+GitHub corre todo esto en cada cambio que llega a `main` o a un *pull request*.
 
 ## En el servidor
 

@@ -4,7 +4,9 @@ Qué hace el sistema según la base de datos recibida, qué problemas tenía esa
 
 **Estado: propuesta.** El esquema nuevo está en [db/esquema.sql](../db/esquema.sql) y se probó en MariaDB 11.8. Falta que el equipo lo revise y que el instituto responda las preguntas del final.
 
-Última actualización: 10 de octubre de 2026.
+**Qué usa ya la API.** De las 15 tablas, 13 están en uso. Las dos que faltan, `solicitudes_ingreso` y `notificaciones`, existen en el esquema pero ninguna ruta las toca todavía: corresponden al uso del laboratorio fuera de clase, que espera respuestas del instituto. De `asistencias` solo se registran las de alumnos en clase; las de docentes e invitados aún no.
+
+Última actualización: 11 de octubre de 2026.
 
 ## Qué hace el sistema
 
@@ -125,6 +127,9 @@ Estas reglas ya no dependen de que la aplicación las recuerde. Todas se probaro
 - **Las cuentas se desactivan, no se borran.** Así el historial conserva quién fue.
 - **Las fechas con hora se guardan en UTC** y la API las convierte a la hora local.
 - **Los alumnos no tienen contraseña**, igual que en la base recibida. Si el instituto decide que inicien sesión, se agrega.
+- **Una asistencia sin equipo significa equipo propio.** Al registrar una entrada es obligatorio indicar una computadora del laboratorio o que se trae equipo propio, así que `equipo_id` vacío nunca es un dato que faltó.
+- **Cada asistencia de clase apunta a su clase** (`clase_id`), además de al curso y a la práctica. Las que no son de una clase lo dejan vacío; hoy no existe ninguna de esas, porque el uso fuera de clase aún no se construye.
+- **Las inscripciones no guardan fecha.** Por eso el resumen de asistencia de un curso cuenta como faltas las clases anteriores a la inscripción. Está anotado como pendiente.
 - **Las prácticas pertenecen a la materia, no al curso**, para no recapturarlas cada semestre. Si cada docente define las suyas, hay que moverlas a `cursos`.
 
 ## Migración de datos

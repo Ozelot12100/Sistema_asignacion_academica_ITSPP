@@ -2,7 +2,9 @@
 
 Qué funciona, qué se ha hecho y qué falta. Este documento se actualiza cada vez que cambia algo de la lista.
 
-Última actualización: 10 de octubre de 2026.
+Última actualización: 11 de octubre de 2026.
+
+El índice de rutas de la API, con quién puede usar cada una, está en [rutas-de-la-api.md](rutas-de-la-api.md).
 
 ## Antecedente
 
@@ -84,7 +86,7 @@ Medidas de seguridad ya incluidas:
 - **Versión de la base en las pruebas.** La integración continua las corre contra MariaDB 11.8, la misma versión del servidor actual. En la máquina de desarrollo se corren contra MariaDB 11.5.
 - **Sin probar.** El límite de intentos del registro de entrada no tiene prueba automática. Un laboratorio completo que comparta una sola dirección de salida a internet podría alcanzarlo si el sistema se aloja fuera del instituto.
 - **Verificado en la base.** Las restricciones del esquema rechazan dos personas en un mismo equipo, un alumno dentro dos veces, un equipo de otro laboratorio, una salida anterior a la entrada y una solicitud resuelta sin fecha.
-- **Sin verificar.** Nada se ha desplegado en un servidor.
+- **Sin verificar.** Nada se ha desplegado en un servidor. Nadie más del equipo ha levantado el proyecto en su máquina siguiendo el README. La aplicación web no se ha probado en un teléfono real, solo en un navegador de escritorio con el tamaño de pantalla de un teléfono.
 
 ## Qué falta
 
@@ -98,25 +100,30 @@ En este orden:
 4. Que la API sirva la aplicación web compilada, despliegue en el servidor y respaldos.
 5. Completar el frontend según el stack acordado: shadcn/ui, instalación en el celular (PWA) y pruebas automáticas del flujo en navegador.
 
-Además: subir a .NET 10, que requiere instalar el SDK.
+Además:
+
+- Subir a .NET 10, que requiere instalar el SDK. .NET 9 pierde soporte en noviembre de 2026.
+- Guardar la fecha de cada inscripción, para que el resumen por curso no cuente como faltas las clases anteriores a ella.
+- Datos de demostración que se puedan cargar con un comando. Hoy cada quien los crea a mano siguiendo [rutas-de-la-api.md](rutas-de-la-api.md).
 
 ### Bloqueado por respuestas
 
-- **Uso fuera de clase.** Depende de quién autoriza a un alumno a usar un laboratorio cuando no tiene clase.
+- **Uso fuera de clase.** Depende de quién autoriza a un alumno a usar un laboratorio cuando no tiene clase. Hoy el laboratorista solo pregunta si tienen clase y los deja quedarse.
 - **Alojamiento.** Se dijo a la vez que el servidor será local y que se instalará en Hostinger. De eso depende si hace falta proteger el registro de entrada con un código de clase.
 - **Permisos por rol.** Hay un reparto provisional; el definitivo depende de qué puede hacer cada quien según el instituto.
 - **Carga de alumnos.** Depende de si se pueden importar del sistema escolar.
 - **Prácticas.** Hoy pertenecen a la materia. Si cada docente define las suyas, hay que moverlas al curso.
 
-Las preguntas completas están en [preguntas-para-el-instituto.md](preguntas-para-el-instituto.md); se enviaron el 10 de octubre de 2026.
+Las preguntas completas están en [preguntas-para-el-instituto.md](preguntas-para-el-instituto.md). Se le entregaron a Andrés el 10 de octubre de 2026, en Word y PDF, para que las lleve al personal; aún no hay respuestas.
 
 ### Por decidir en el equipo
 
 - Aprobar el esquema de la base de datos.
 - Renombrar el repositorio en GitHub.
-- Quién lleva el frontend.
+- Quién lleva el despliegue y el servidor.
 
 ### Por conseguir
 
-- El código y capturas del sistema que está en producción.
+- El código del sistema que está en producción. No está en este repositorio.
+- Capturas de sus pantallas. Solo se tiene acceso a la vista de alumnos; David quedó de pasar las de esa vista.
 - Confirmar si la base recibida es la de producción; todos sus registros son del 3 de octubre de 2026 y no tiene asistencias ni alumnos.

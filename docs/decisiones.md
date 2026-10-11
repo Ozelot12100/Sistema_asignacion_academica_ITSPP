@@ -4,7 +4,7 @@ Registro de las decisiones que dan forma al sistema. Cada una dice qué se decid
 
 Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](stack-tecnologico.md).
 
-Última actualización: 10 de octubre de 2026.
+Última actualización: 11 de octubre de 2026.
 
 ## Resumen
 
@@ -61,6 +61,8 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Consecuencia.** La API se diseña libremente, sin tener que imitar la actual.
 
+**Estado.** Iniciado el 10 de octubre de 2026 en `web/`, con el registro de entrada del alumno y las pantallas del docente. Del sistema en producción solo se tiene acceso a la vista de alumnos, así que el resto de los flujos se diseñó a partir de lo que describió el equipo.
+
 ## D5. Aplicación web adaptable, no aplicaciones nativas
 
 **Decisión.** Una sola aplicación web que se adapta a computadora, tableta y celular, instalable desde el navegador (PWA).
@@ -77,7 +79,9 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Por qué.** No hace falta Node en producción (el código del frontend lo ejecuta el navegador de cada usuario), no hay problemas de CORS y el inicio de sesión por cookie funciona directo porque todo sale del mismo origen.
 
-**En desarrollo.** Corren dos procesos: la API y el servidor de Vite, que reenvía las llamadas a la API.
+**En desarrollo.** Corren dos procesos: la API y el servidor de Vite, que reenvía las llamadas a la API. Esto ya funciona así.
+
+**Estado.** Falta la parte de producción: que la API entregue los archivos de `web/dist/` y responda con la página principal en las rutas que no son de la API.
 
 ## D7. Autenticación con cookie de sesión y roles
 
@@ -95,7 +99,9 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Estado.** Implementado.
 
-**Pendiente.** Qué puede hacer exactamente cada rol, y si los alumnos deben tener cuenta.
+**Alumnos.** No tienen cuenta ni contraseña. Lo único que hacen es registrar su entrada con su número de control, en una ruta que no pide sesión (D22).
+
+**Pendiente.** Qué puede hacer exactamente cada rol, que depende del instituto.
 
 ## D8. La base de datos: se parte de la existente y se revisa al recibirla
 
@@ -122,6 +128,8 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 **Depende de.** El sistema operativo del servidor. Si es Windows Server, se usaría IIS en lugar de Docker.
 
 **Nota.** La base recibida está alojada en Hostinger. Falta definir si el sistema nuevo se queda ahí o pasa al servidor de la universidad, que es lo planeado.
+
+**Actualización del 10 de octubre de 2026.** El responsable del backend dijo dos cosas que no pueden ser ciertas a la vez: que el servidor será local y los alumnos no podrán conectarse desde fuera del instituto, y que el sistema se instalará en Hostinger, que está en internet. Se preguntó al instituto. La respuesta cambia dos cosas: la forma de desplegar (en Hostinger depende de qué plan se tenga y si permite correr una aplicación .NET) y si el registro de entrada necesita un código de clase (D22).
 
 ## D12. El proyecto es el control de asistencias a laboratorios
 
@@ -181,7 +189,7 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Por qué.** Buena parte de las reglas vive en la base (restricciones, llaves). Una base simulada en memoria no las aplicaría y daría pruebas que pasan con código que falla en producción.
 
-**Costo.** Para correr las pruebas hace falta Docker. Se considera aceptable.
+**Costo.** Para correr las pruebas hace falta un servidor MariaDB, con Docker o instalado en la máquina. Se considera aceptable. No sirve MySQL; ver [stack-tecnologico.md](stack-tecnologico.md).
 
 ## D18. Reparto provisional de permisos por rol
 
@@ -246,5 +254,6 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 | Uso del laboratorio fuera de clase | Respuesta del instituto sobre quién lo autoriza |
 | Permisos definitivos de cada rol | Respuesta del instituto |
 | Dónde se aloja el sistema | Se dijo a la vez que el servidor será local, solo dentro del instituto, y que se instalará en Hostinger; hay que confirmar cuál |
-| Subir a .NET 10 | Instalar el SDK en los equipos de desarrollo |
-| Quién lleva el frontend | Definirlo en el equipo |
+| Subir a .NET 10 | Instalar el SDK en los equipos de desarrollo. .NET 9 pierde soporte en noviembre de 2026 |
+| Prácticas por materia o por curso | Respuesta del instituto (D21) |
+| Código de clase en el registro de entrada | Saber dónde se aloja el sistema (D22) |
