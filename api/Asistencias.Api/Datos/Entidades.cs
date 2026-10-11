@@ -115,17 +115,36 @@ public class Practica
     public int? DuracionMinutos { get; set; }
 }
 
+public class Clase
+{
+    public int Id { get; set; }
+    public int CursoId { get; set; }
+    public Curso? Curso { get; set; }
+    public int LaboratorioId { get; set; }
+    public Laboratorio? Laboratorio { get; set; }
+    public int? PracticaId { get; set; }
+    public Practica? Practica { get; set; }
+    public int AbiertaPorId { get; set; }
+    public Usuario? AbiertaPor { get; set; }
+    public DateTime AbiertaEn { get; set; } = DateTime.UtcNow;
+    public DateTime? CerradaEn { get; set; }
+    public List<Asistencia> Asistencias { get; set; } = [];
+}
+
 public class Asistencia
 {
     public long Id { get; set; }
     public int LaboratorioId { get; set; }
     public int? EquipoId { get; set; }
+    public Equipo? Equipo { get; set; }
     public TipoUsuario TipoUsuario { get; set; }
     public int? AlumnoId { get; set; }
+    public Alumno? Alumno { get; set; }
     public int? UsuarioId { get; set; }
     public string? InvitadoNombre { get; set; }
     public int? CursoId { get; set; }
     public int? PracticaId { get; set; }
+    public int? ClaseId { get; set; }
     public DateTime HoraEntrada { get; set; } = DateTime.UtcNow;
     public DateTime? HoraSalida { get; set; }
 }

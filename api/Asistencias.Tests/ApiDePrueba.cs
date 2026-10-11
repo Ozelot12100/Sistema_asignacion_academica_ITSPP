@@ -25,6 +25,7 @@ public class ApiDePrueba : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseEnvironment("Development");
         builder.UseSetting("ConnectionStrings:DefaultConnection", $"{Servidor}Database={_base};");
         builder.UseSetting("Login:IntentosPorMinuto", "1000");
+        builder.UseSetting("Registro:IntentosPorMinuto", "1000");
     }
 
     public async Task InitializeAsync()

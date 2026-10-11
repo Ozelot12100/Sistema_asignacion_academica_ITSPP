@@ -4,6 +4,7 @@ using System.Threading.RateLimiting;
 using Asistencias.Api.Alumnos;
 using Asistencias.Api.Autenticacion;
 using Asistencias.Api.Catalogos;
+using Asistencias.Api.Clases;
 using Asistencias.Api.Comun;
 using Asistencias.Api.Cursos;
 using Asistencias.Api.Datos;
@@ -43,6 +44,15 @@ builder.Services.AddRateLimiter(options =>
                 PermitLimit = http.RequestServices.GetRequiredService<IConfiguration>().GetValue("Login:IntentosPorMinuto", 10),
                 Window = TimeSpan.FromMinutes(1),
             }));
+    // El registro de entrada no pide sesión; el límite frena el probar números de control al azar
+    options.AddPolicy(ClasesEndpoints.LimiteRegistro, http =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            http.Connection.RemoteIpAddress?.ToString() ?? "desconocida",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = http.RequestServices.GetRequiredService<IConfiguration>().GetValue("Registro:IntentosPorMinuto", 120),
+                Window = TimeSpan.FromMinutes(1),
+            }));
 });
 
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -77,6 +87,7 @@ app.MapMaterias();
 app.MapAlumnos();
 app.MapCursos();
 app.MapPracticas();
+app.MapClases();
 
 await app.CrearAdminInicialAsync();
 

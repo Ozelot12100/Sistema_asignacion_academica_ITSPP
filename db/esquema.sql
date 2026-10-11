@@ -175,6 +175,34 @@ CREATE TABLE solicitudes_ingreso (
   CONSTRAINT ck_solicitudes_resolucion CHECK ((estado = 'pendiente') = (resuelta_en IS NULL))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Una sesión de clase de un curso en un laboratorio. El docente la abre, los alumnos inscritos
+-- registran su entrada mientras está abierta, y al cerrarla se registra la salida de todos.
+CREATE TABLE clases (
+  id              INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  curso_id        INT UNSIGNED NOT NULL,
+  laboratorio_id  INT UNSIGNED NOT NULL,
+  practica_id     INT UNSIGNED DEFAULT NULL,
+  abierta_por     INT UNSIGNED NOT NULL,
+  abierta_en      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  cerrada_en      DATETIME     DEFAULT NULL,
+  -- Solo tienen valor mientras la clase está abierta; sus índices únicos impiden
+  -- dos clases abiertas a la vez en un laboratorio o de un mismo curso.
+  laboratorio_abierto  INT UNSIGNED AS (IF(cerrada_en IS NULL, laboratorio_id, NULL)) STORED,
+  curso_abierto        INT UNSIGNED AS (IF(cerrada_en IS NULL, curso_id, NULL)) STORED,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_clases_laboratorio_abierto (laboratorio_abierto),
+  UNIQUE KEY uq_clases_curso_abierto (curso_abierto),
+  KEY ix_clases_curso (curso_id, abierta_en),
+  KEY ix_clases_laboratorio (laboratorio_id, abierta_en),
+  KEY ix_clases_practica (practica_id),
+  KEY ix_clases_abierta_por (abierta_por),
+  CONSTRAINT fk_clases_curso FOREIGN KEY (curso_id) REFERENCES cursos (id),
+  CONSTRAINT fk_clases_laboratorio FOREIGN KEY (laboratorio_id) REFERENCES laboratorios (id),
+  CONSTRAINT fk_clases_practica FOREIGN KEY (practica_id) REFERENCES practicas (id),
+  CONSTRAINT fk_clases_abierta_por FOREIGN KEY (abierta_por) REFERENCES usuarios (id),
+  CONSTRAINT ck_clases_horas CHECK (cerrada_en IS NULL OR cerrada_en >= abierta_en)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Cada entrada a un laboratorio. Mientras hora_salida es NULL la persona sigue dentro.
 -- Sustituye a asistencias y asistencias_historico.
 CREATE TABLE asistencias (
@@ -188,8 +216,10 @@ CREATE TABLE asistencias (
   invitado_nombre  VARCHAR(200) DEFAULT NULL,
   curso_id         INT UNSIGNED DEFAULT NULL,
   practica_id      INT UNSIGNED DEFAULT NULL,
+  -- La clase en la que se registró la entrada; NULL si entró fuera de clase
+  clase_id         INT UNSIGNED DEFAULT NULL,
   solicitud_id     INT UNSIGNED DEFAULT NULL,
-  hora_entrada     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  hora_entrada    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   hora_salida      DATETIME     DEFAULT NULL,
   -- Solo tienen valor mientras la asistencia está abierta; sus índices únicos impiden
   -- que un equipo tenga dos ocupantes o que un alumno esté dentro dos veces.
@@ -204,6 +234,7 @@ CREATE TABLE asistencias (
   KEY ix_asistencias_usuario (usuario_id),
   KEY ix_asistencias_curso (curso_id),
   KEY ix_asistencias_practica (practica_id),
+  KEY ix_asistencias_clase (clase_id),
   KEY ix_asistencias_solicitud (solicitud_id),
   CONSTRAINT fk_asistencias_laboratorio FOREIGN KEY (laboratorio_id) REFERENCES laboratorios (id),
   CONSTRAINT fk_asistencias_equipo FOREIGN KEY (equipo_id, laboratorio_id) REFERENCES equipos (id, laboratorio_id),
@@ -211,6 +242,7 @@ CREATE TABLE asistencias (
   CONSTRAINT fk_asistencias_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
   CONSTRAINT fk_asistencias_curso FOREIGN KEY (curso_id) REFERENCES cursos (id),
   CONSTRAINT fk_asistencias_practica FOREIGN KEY (practica_id) REFERENCES practicas (id),
+  CONSTRAINT fk_asistencias_clase FOREIGN KEY (clase_id) REFERENCES clases (id),
   CONSTRAINT fk_asistencias_solicitud FOREIGN KEY (solicitud_id) REFERENCES solicitudes_ingreso (id),
   CONSTRAINT ck_asistencias_horas CHECK (hora_salida IS NULL OR hora_salida >= hora_entrada),
   CONSTRAINT ck_asistencias_persona CHECK (
