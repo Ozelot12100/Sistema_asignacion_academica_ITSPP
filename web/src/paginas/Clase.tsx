@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, resultado } from "../api/cliente";
+import { CampoDeEquipo, paraLaApi, SIN_EQUIPO } from "../componentes/CampoDeEquipo";
 import { Aviso, Boton, Campo, Cargando, Tarjeta } from "../componentes/ui";
 import { fechaYHora, hora, mensaje } from "../formato";
 import type { Usuario } from "../sesion";
@@ -10,7 +11,7 @@ export function Clase({ usuario }: { usuario: Usuario }) {
   const id = Number(useParams().id);
   const cache = useQueryClient();
   const [matricula, setMatricula] = useState("");
-  const [equipo, setEquipo] = useState("");
+  const [equipo, setEquipo] = useState(SIN_EQUIPO);
 
   const clase = useQuery({
     queryKey: ["clases", id],
@@ -30,12 +31,12 @@ export function Clase({ usuario }: { usuario: Usuario }) {
       resultado(
         api.POST("/api/clases/{id}/asistencias", {
           params: { path: { id } },
-          body: { matricula: matricula.trim(), equipo: equipo.trim() || null },
+          body: { matricula: matricula.trim(), ...paraLaApi(equipo) },
         }),
       ),
     onSuccess: () => {
       setMatricula("");
-      setEquipo("");
+      setEquipo(SIN_EQUIPO);
       void refrescar();
     },
   });
@@ -115,7 +116,7 @@ export function Clase({ usuario }: { usuario: Usuario }) {
       {abierta && puedeLlevarla && (
         <Tarjeta>
           <h3 className="mb-3 font-semibold">Registrar a un alumno a mano</h3>
-          <form onSubmit={enviar} className="grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
+          <form onSubmit={enviar} className="grid items-start gap-3 sm:grid-cols-[1fr_1fr_auto]">
             <Campo
               etiqueta="Número de control"
               value={matricula}
@@ -125,14 +126,8 @@ export function Clase({ usuario }: { usuario: Usuario }) {
               maxLength={20}
               required
             />
-            <Campo
-              etiqueta="Equipo (opcional)"
-              value={equipo}
-              onChange={(e) => setEquipo(e.target.value)}
-              autoComplete="off"
-              maxLength={50}
-            />
-            <Boton type="submit" disabled={registrar.isPending}>
+            <CampoDeEquipo valor={equipo} alCambiar={setEquipo} />
+            <Boton type="submit" className="sm:mt-6" disabled={registrar.isPending}>
               Registrar
             </Boton>
           </form>
@@ -167,7 +162,7 @@ export function Clase({ usuario }: { usuario: Usuario }) {
                     {alumno.presente ? "Presente" : abierta ? "Sin registrar" : "Falta"}
                   </span>
                 </td>
-                <td className="px-4 py-3">{alumno.equipo ?? "—"}</td>
+                <td className="px-4 py-3">{alumno.equipo ?? (alumno.presente ? "Propio" : "—")}</td>
                 <td className="px-4 py-3 tabular-nums">{hora(alumno.horaEntrada)}</td>
                 <td className="px-4 py-3 tabular-nums">{hora(alumno.horaSalida)}</td>
                 {puedeLlevarla && (

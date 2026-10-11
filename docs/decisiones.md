@@ -233,7 +233,9 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Reglas.** Un laboratorio tiene a lo más una clase abierta, y un curso también; la base lo hace cumplir. La clase la abre el docente del curso o el administrador, y la cierra cualquiera de ellos o el laboratorista, para poder liberar el laboratorio si el docente se fue sin cerrarla.
 
-**Pendiente.** Si el alumno debe indicar el equipo que ocupa (hoy es opcional, tecleando su etiqueta), y el uso del laboratorio fuera de clase, que se resolverá junto con las solicitudes de ingreso.
+**Equipo.** Al registrarse, el alumno debe indicar la computadora del laboratorio que ocupa, tecleando su etiqueta, o marcar que trae su propio equipo. Una de las dos cosas es obligatoria, también cuando lo registra a mano quien lleva la clase. Así una asistencia sin equipo siempre significa equipo propio, y nunca un dato que faltó. Definido el 10 de octubre de 2026.
+
+**Pendiente.** El uso del laboratorio fuera de clase, que se resolverá junto con las solicitudes de ingreso.
 
 ## Decisiones abiertas
 

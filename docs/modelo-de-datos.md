@@ -10,7 +10,7 @@ Qué hace el sistema según la base de datos recibida, qué problemas tenía esa
 
 Controla quién usa los laboratorios de cómputo del ITSPP:
 
-1. **Registro de entrada y salida.** El docente abre la clase de su curso en un laboratorio. Mientras está abierta, cada alumno inscrito registra su propia entrada con su número de control, desde cualquier computadora o teléfono, y puede indicar el equipo que ocupa. Cuando el docente cierra la clase se registra la salida de todos. El alumno nunca registra su salida.
+1. **Registro de entrada y salida.** El docente abre la clase de su curso en un laboratorio. Mientras está abierta, cada alumno inscrito registra su propia entrada con su número de control, desde cualquier computadora o teléfono, e indica la computadora que ocupa o que trae su propio equipo. Cuando el docente cierra la clase se registra la salida de todos. El alumno nunca registra su salida.
 2. **Estado de los equipos.** Para cada equipo se sabe si está libre, en uso o fuera de servicio, y quién lo está usando.
 3. **Solicitudes de ingreso.** Un alumno pide usar un laboratorio fuera de su clase, con un motivo; alguien la aprueba o la rechaza.
 4. **Materias y prácticas.** Cada materia tiene un docente, un periodo, un laboratorio y una lista de prácticas.

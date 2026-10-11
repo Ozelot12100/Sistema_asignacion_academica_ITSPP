@@ -13,7 +13,7 @@ Las entrega: Andrés. Las respuestas se anotan aquí mismo, debajo de cada pregu
 Para dar contexto a las preguntas, así funciona hoy lo que ya está construido:
 
 1. El docente abre su clase en el sistema al llegar al laboratorio.
-2. Cada alumno registra su entrada con su número de control, desde una computadora del laboratorio o desde su teléfono.
+2. Cada alumno registra su entrada con su número de control, desde una computadora del laboratorio o desde su teléfono, e indica qué computadora ocupa o que trae su propio equipo.
 3. Al terminar, el docente cierra la clase y el sistema registra la salida de todos.
 
 Si algo de esto no corresponde a cómo quieren trabajar, es lo primero que necesitamos saber.
@@ -27,9 +27,8 @@ Si está en internet, un alumno podría registrar su asistencia desde su casa y 
 Respuesta:
 
 **2. ¿El alumno debe indicar qué computadora ocupa al registrar su entrada, o basta con registrar que entró al laboratorio?**
-*Si no hay respuesta:* será opcional.
 
-Respuesta:
+Respuesta: ya no hace falta contestarla. El responsable del backend definió el 10 de octubre de 2026 que sí debe indicarla, o marcar que trae su propio equipo. Se conserva el número para que coincida con el documento que ya se entregó.
 
 **3. Cuando un alumno o un grupo usa un laboratorio sin tener clase, ¿alguien debe autorizarlo? ¿Quién? ¿Quieren que ese uso quede registrado en el sistema?**
 Entendemos que hoy el laboratorista solo pregunta si tienen clase y los deja quedarse.
@@ -116,3 +115,4 @@ Respuesta:
 | ¿Cómo se identifica el alumno al entrar? | Con su número de control. Él mismo registra su entrada, desde cualquier computadora o teléfono, cuando el docente abre la clase | 10 de octubre de 2026 |
 | ¿Quién registra la salida? | El docente, al cerrar la clase. El alumno solo registra su entrada | 10 de octubre de 2026 |
 | ¿Qué turnos existen? | Matutino y vespertino | 10 de octubre de 2026 |
+| ¿El alumno debe indicar qué computadora ocupa? | Sí. Indica la computadora del laboratorio o marca que trae su propio equipo; una de las dos es obligatoria | 10 de octubre de 2026 |

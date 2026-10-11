@@ -2,18 +2,19 @@ import { useMutation } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { api, resultado } from "../api/cliente";
+import { CampoDeEquipo, paraLaApi, SIN_EQUIPO } from "../componentes/CampoDeEquipo";
 import { Aviso, Boton, Campo, Tarjeta } from "../componentes/ui";
 import { hora, mensaje } from "../formato";
 
 // La pantalla del alumno: no pide sesión, solo su número de control
 export function Registro() {
   const [matricula, setMatricula] = useState("");
-  const [equipo, setEquipo] = useState("");
+  const [equipo, setEquipo] = useState(SIN_EQUIPO);
   const registrar = useMutation({
     mutationFn: () =>
       resultado(
         api.POST("/api/registro/entrada", {
-          body: { matricula: matricula.trim(), equipo: equipo.trim() || null },
+          body: { matricula: matricula.trim(), ...paraLaApi(equipo) },
         }),
       ),
   });
@@ -26,7 +27,7 @@ export function Registro() {
   // En una computadora compartida, el siguiente alumno empieza con el formulario limpio
   function otroAlumno() {
     setMatricula("");
-    setEquipo("");
+    setEquipo(SIN_EQUIPO);
     registrar.reset();
   }
 
@@ -49,7 +50,7 @@ export function Registro() {
               {registrar.data.materia} · Grupo {registrar.data.grupo}
             </div>
             <div>{registrar.data.laboratorio}</div>
-            {registrar.data.equipo && <div>Equipo {registrar.data.equipo}</div>}
+            <div>{registrar.data.equipo ? `Equipo ${registrar.data.equipo}` : "Con tu propio equipo"}</div>
             <div>Hora de entrada: {hora(registrar.data.horaEntrada)}</div>
           </dl>
           <p className="mt-3 text-xs text-slate-500">
@@ -74,14 +75,7 @@ export function Registro() {
               autoFocus
               required
             />
-            <Campo
-              etiqueta="Equipo (opcional)"
-              ayuda="La etiqueta de la computadora que vas a usar, por ejemplo PC-12. Déjalo vacío si traes tu equipo."
-              value={equipo}
-              onChange={(e) => setEquipo(e.target.value)}
-              autoComplete="off"
-              maxLength={50}
-            />
+            <CampoDeEquipo valor={equipo} alCambiar={setEquipo} />
             {registrar.isError && <Aviso tipo="error">{mensaje(registrar.error)}</Aviso>}
             <Boton type="submit" className="w-full py-3 text-base" disabled={registrar.isPending}>
               {registrar.isPending ? "Registrando…" : "Registrar entrada"}

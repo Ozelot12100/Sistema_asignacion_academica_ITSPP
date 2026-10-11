@@ -6,7 +6,7 @@ Aplicación web del sistema de asistencias, en React, TypeScript y Vite. Las her
 
 | Ruta | Para quién | Qué hace |
 |---|---|---|
-| `/` | Alumno, sin sesión | Registra su entrada con su número de control y, si quiere, la etiqueta de su equipo |
+| `/` | Alumno, sin sesión | Registra su entrada con su número de control, e indica la computadora que ocupa o que trae su propio equipo |
 | `/entrar` | Personal | Inicio de sesión |
 | `/panel` | Personal | Clases abiertas, cursos (con el botón para abrir clase) y clases anteriores. El docente ve solo lo suyo |
 | `/clases/:id` | Personal | Lista del grupo en vivo, registrar a un alumno a mano, quitar una entrada y cerrar la clase |

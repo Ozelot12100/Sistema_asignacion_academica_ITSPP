@@ -18,7 +18,8 @@ public record AsistenteDto(
     long AsistenciaId, int AlumnoId, string Matricula, string Nombre, string Apellido,
     string? Equipo, DateTime HoraEntrada, DateTime? HoraSalida);
 
-public record EntradaAlumno(string? Matricula, string? Equipo);
+// Equipo es la etiqueta de la computadora del laboratorio; EquipoPropio, que el alumno trae la suya
+public record EntradaAlumno(string? Matricula, string? Equipo, bool? EquipoPropio);
 
 public record EntradaRegistradaDto(
     string Alumno, string Materia, string Grupo, string Laboratorio, string? Equipo, DateTime HoraEntrada);
@@ -141,7 +142,7 @@ public static class ClasesEndpoints
 
             var v = new Validador();
             var matricula = v.Texto("matricula", entrada.Matricula, 20);
-            var etiqueta = v.Opcional("equipo", entrada.Equipo, 50);
+            var etiqueta = EquipoIndicado(v, entrada);
             if (v.Error is { } error) return error;
 
             var clase = await Abiertas(db.Clases.Where(c => c.Id == id)).SingleOrDefaultAsync();
@@ -177,7 +178,7 @@ public static class ClasesEndpoints
         {
             var v = new Validador();
             var matricula = v.Texto("matricula", entrada.Matricula, 20);
-            var etiqueta = v.Opcional("equipo", entrada.Equipo, 50);
+            var etiqueta = EquipoIndicado(v, entrada);
             if (v.Error is { } error) return error;
 
             var alumno = await db.Alumnos.AsNoTracking().SingleOrDefaultAsync(a => a.Matricula == matricula && a.Activo);
@@ -233,6 +234,17 @@ public static class ClasesEndpoints
         clases.AsNoTracking().Where(c => c.CerradaEn == null).Select(c => new ClaseAbierta(
             c.Id, c.CursoId, c.LaboratorioId, c.PracticaId,
             c.Curso!.Materia!.Nombre, c.Curso.Grupo, c.Laboratorio!.Nombre));
+
+    // Siempre se sabe qué ocupa el alumno: una computadora del laboratorio o la suya, nunca ninguna ni las dos.
+    // Devuelve la etiqueta, o null si trae su propio equipo.
+    private static string? EquipoIndicado(Validador v, EntradaAlumno entrada)
+    {
+        var etiqueta = v.Opcional("equipo", entrada.Equipo, 50);
+        var propio = entrada.EquipoPropio == true;
+        v.Si(etiqueta is null && !propio, "equipo", "Indica la computadora que ocupas o marca que traes tu propio equipo.");
+        v.Si(etiqueta is not null && propio, "equipo", "Indica una computadora o tu propio equipo, no las dos cosas.");
+        return etiqueta;
+    }
 
     // Lo que tienen en común el registro que hace el alumno y el que hace quien lleva la clase
     private static async Task<IResult> RegistrarAsync(

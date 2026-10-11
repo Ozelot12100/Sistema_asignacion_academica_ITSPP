@@ -2070,6 +2070,7 @@ export interface components {
     EntradaAlumno: {
       matricula: string | null;
       equipo: string | null;
+      equipoPropio: boolean | null;
     };
     EntradaBitacoraDto: {
       /** Format: int64 */

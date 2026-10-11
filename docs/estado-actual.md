@@ -25,7 +25,7 @@ El repositorio se recibió con una API de horarios (profesores, aulas, grupos, c
 | Inscripciones | Inscribir y dar de baja alumnos de un curso, uno por uno o con una lista de números de control; lista de un curso y cursos de un alumno |
 | Prácticas | Alta, edición, baja y listado de las prácticas de cada materia, ordenadas por número |
 | Clases | El docente abre la clase de su curso en un laboratorio y la cierra; listado de clases y de quién asistió a cada una |
-| Registro de entrada | `POST /api/registro/entrada`, sin sesión: el alumno inscrito registra su entrada con su número de control mientras la clase está abierta, y puede indicar su equipo. Al cerrar la clase se registra la salida de todos |
+| Registro de entrada | `POST /api/registro/entrada`, sin sesión: el alumno inscrito registra su entrada con su número de control mientras la clase está abierta, e indica la computadora que ocupa o que trae su propio equipo. Al cerrar la clase se registra la salida de todos |
 | Lista de asistencia | De cada clase: quién asistió, con qué equipo y a qué hora, y quién faltó. De cada curso: asistencias, faltas y porcentaje de cada alumno |
 | Correcciones | Quien lleva la clase registra a mano a un alumno que no pudo hacerlo y quita una entrada registrada por error |
 | Bitácora | Cada alta, cambio o baja queda anotado automáticamente con su autor, incluido el borrado de una asistencia. El administrador la consulta filtrada por usuario, acción, registro y fechas |
@@ -65,7 +65,8 @@ Este reparto es una suposición razonable, no algo que haya definido el institut
 - Inscribir a un alumno ya inscrito no es un error. A un alumno desactivado no se le inscribe (409).
 - Borrar un curso borra sus inscripciones. Un curso o una práctica con asistencias no se puede borrar.
 - Un laboratorio tiene a lo más una clase abierta, y un curso también.
-- Solo registra su entrada un alumno activo, inscrito en un curso con la clase abierta, y que no esté ya dentro. Si indica un equipo, debe ser del laboratorio de la clase, estar libre y en servicio.
+- Solo registra su entrada un alumno activo, inscrito en un curso con la clase abierta, y que no esté ya dentro.
+- Al registrarse hay que indicar la computadora que se ocupa o que se trae equipo propio; no se acepta ninguna de las dos ni las dos. La computadora debe ser del laboratorio de la clase, estar libre y en servicio.
 
 Medidas de seguridad ya incluidas:
 
@@ -77,7 +78,7 @@ Medidas de seguridad ya incluidas:
 
 ## Qué se verificó y qué no
 
-- **Verificado.** 111 pruebas automáticas de la API pasan. Cubren inicio y cierre de sesión, invalidación de sesiones, permisos de cada rol, validación de datos, duplicados, borrados bloqueados, búsqueda de alumnos, estado de los equipos, cursos, inscripciones, prácticas, clases, registro de entrada, listas de asistencia, correcciones, cargas en lote y la bitácora.
+- **Verificado.** 112 pruebas automáticas de la API pasan. Cubren inicio y cierre de sesión, invalidación de sesiones, permisos de cada rol, validación de datos, duplicados, borrados bloqueados, búsqueda de alumnos, estado de los equipos, cursos, inscripciones, prácticas, clases, registro de entrada, listas de asistencia, correcciones, cargas en lote y la bitácora.
 - **Verificado en un navegador.** El 10 de octubre de 2026 se recorrió el flujo completo en la aplicación web, con la API y la base reales: el docente entra y abre su clase, el alumno se registra desde una pantalla de teléfono, la lista del docente se actualiza sola, el docente registra a mano y quita una entrada, y cierra la clase. También los rechazos: contraseña incorrecta, número de control inexistente, doble registro y equipo ocupado. Esa prueba se hizo con un guion suelto; todavía no forma parte de las pruebas automáticas.
 - **Limitación conocida.** El resumen por curso cuenta como falta toda clase a la que el alumno no entró, incluidas las anteriores a su inscripción, porque las inscripciones no guardan fecha.
 - **Versión de la base en las pruebas.** La integración continua las corre contra MariaDB 11.8, la misma versión del servidor actual. En la máquina de desarrollo se corren contra MariaDB 11.5.

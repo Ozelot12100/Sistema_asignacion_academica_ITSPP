@@ -44,8 +44,30 @@ public class ClasesTests(ApiDePrueba api) : IClassFixture<ApiDePrueba>
         return matricula;
     }
 
+    // Sin etiqueta de equipo, el alumno declara que trae el suyo
     private Task<HttpResponseMessage> RegistrarEntrada(string matricula, string? equipo = null) =>
-        api.CreateClient().PostAsJsonAsync("/api/registro/entrada", new { matricula, equipo });
+        api.CreateClient().PostAsJsonAsync("/api/registro/entrada", new { matricula, equipo, equipoPropio = equipo is null });
+
+    [Fact]
+    public async Task El_alumno_debe_indicar_una_computadora_o_que_trae_su_propio_equipo()
+    {
+        var e = await CrearEscenario();
+        var claseId = await IdCreado(await e.Docente.PostAsJsonAsync("/api/clases", new { cursoId = e.CursoId }));
+        var matricula = await InscribirAlumno(e);
+        var cliente = api.CreateClient();
+
+        var nada = await cliente.PostAsJsonAsync("/api/registro/entrada", new { matricula });
+        var lasDos = await cliente.PostAsJsonAsync("/api/registro/entrada", new { matricula, equipo = "PC-1", equipoPropio = true });
+        var aManoSinEquipo = await e.Docente.PostAsJsonAsync($"/api/clases/{claseId}/asistencias", new { matricula });
+        var propio = await cliente.PostAsJsonAsync("/api/registro/entrada", new { matricula, equipoPropio = true });
+
+        Assert.Equal(HttpStatusCode.BadRequest, nada.StatusCode);
+        Assert.Contains("equipo", (await nada.Content.ReadFromJsonAsync<JsonObject>())!["errors"]!.AsObject().Select(x => x.Key));
+        Assert.Equal(HttpStatusCode.BadRequest, lasDos.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, aManoSinEquipo.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, propio.StatusCode);
+        Assert.Null((await propio.Content.ReadFromJsonAsync<JsonObject>())!["equipo"]);
+    }
 
     [Fact]
     public async Task El_docente_abre_la_clase_los_alumnos_entran_y_al_cerrarla_salen_todos()
@@ -191,12 +213,12 @@ public class ClasesTests(ApiDePrueba api) : IClassFixture<ApiDePrueba>
         var claseId = await IdCreado(await e.Docente.PostAsJsonAsync("/api/clases", new { cursoId = e.CursoId }));
         var ruta = $"/api/clases/{claseId}/asistencias";
 
-        Assert.Equal(HttpStatusCode.Forbidden, (await otroDocente.PostAsJsonAsync(ruta, new { matricula })).StatusCode);
-        Assert.Equal(HttpStatusCode.Conflict, (await e.Docente.PostAsJsonAsync(ruta, new { matricula = noInscrito })).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await e.Docente.PostAsJsonAsync(ruta, new { matricula = "no-existe" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await otroDocente.PostAsJsonAsync(ruta, new { matricula, equipoPropio = true })).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await e.Docente.PostAsJsonAsync(ruta, new { matricula = noInscrito, equipoPropio = true })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await e.Docente.PostAsJsonAsync(ruta, new { matricula = "no-existe", equipoPropio = true })).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await e.Docente.PostAsJsonAsync(ruta, new { })).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await e.Docente.PostAsJsonAsync(ruta, new { matricula, equipo = "PC-1" })).StatusCode);
-        Assert.Equal(HttpStatusCode.Conflict, (await laboratorista.PostAsJsonAsync(ruta, new { matricula })).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await laboratorista.PostAsJsonAsync(ruta, new { matricula, equipoPropio = true })).StatusCode);
 
         var asistenciaId = (long)Assert.Single((await e.Docente.GetFromJsonAsync<JsonArray>(ruta))!)!["asistenciaId"]!;
         Assert.Equal(HttpStatusCode.Forbidden, (await otroDocente.DeleteAsync($"{ruta}/{asistenciaId}")).StatusCode);
@@ -210,7 +232,7 @@ public class ClasesTests(ApiDePrueba api) : IClassFixture<ApiDePrueba>
         Assert.Equal(1, enBitacora);
 
         await e.Docente.PostAsync($"/api/clases/{claseId}/cerrar", null);
-        Assert.Equal(HttpStatusCode.Conflict, (await e.Docente.PostAsJsonAsync(ruta, new { matricula })).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await e.Docente.PostAsJsonAsync(ruta, new { matricula, equipoPropio = true })).StatusCode);
     }
 
     [Fact]
