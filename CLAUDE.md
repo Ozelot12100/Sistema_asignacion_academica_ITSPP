@@ -12,7 +12,7 @@ Guía de contexto y trabajo para asistentes de desarrollo (Claude Code / Antigra
 
 * **Backend:** .NET 9 (C# 13), ASP.NET Core Minimal APIs, EF Core 9 con Pomelo (`Pomelo.EntityFrameworkCore.MySql`), Scalar para documentación OpenAPI interactiva (`/scalar/v1`).
 * **Base de datos:** MariaDB 11.8 / MySQL 9.4. Esquema relacional de 14 tablas en `db/esquema.sql` (utf8mb4, snake_case) y datos iniciales en `db/datos-iniciales.sql`.
-* **Pruebas:** xUnit en `api/Asistencias.Tests` (52 pruebas de integración automáticas que cubren autenticación, roles, catálogos, alumnos y bitácora).
+* **Pruebas:** xUnit en `api/Asistencias.Tests` (79 pruebas automáticas que cubren autenticación, roles, catálogos, alumnos, cursos, inscripciones, prácticas y bitácora).
 * **Frontend:** Carpeta `web/`, pendiente de iniciar en React + TypeScript + Vite.
 
 ## 3. Comandos Frecuentes
@@ -29,7 +29,7 @@ dotnet run --project api/Asistencias.Api
 ```
 
 * La documentación interactiva de la API queda disponible en `http://localhost:5270/scalar/v1`.
-* Las pruebas de integración se conectan por defecto a `Server=localhost;Port=3306;Uid=root;Pwd=local;` (o al valor definido en la variable de entorno `ASISTENCIAS_TEST_DB`).
+* Las pruebas de integración se conectan por defecto a `Server=localhost;Port=3306;Uid=root;Pwd=local;` (o al valor definido en la variable de entorno `ASISTENCIAS_TEST_DB`). El servidor debe ser MariaDB: la API usa `RETURNING`, que MySQL no soporta.
 
 ## 4. Manejo de Configuración y Secretos
 
@@ -50,15 +50,15 @@ dotnet run --project api/Asistencias.Api
   * Gestión de usuarios, cambio y restablecimiento de contraseña.
   * Catálogos completos: laboratorios, equipos (libre, en uso, fuera de servicio con notas), carreras, periodos y materias.
   * Gestión de alumnos con búsqueda paginada por matrícula o nombre.
+  * Cursos, inscripciones de alumnos y prácticas por materia (`api/Asistencias.Api/Cursos/`).
   * Bitácora de auditoría automática ante altas, bajas y modificaciones.
-  * 52 pruebas de integración pasando.
+  * 79 pruebas automáticas pasando.
 * **Siguientes tareas por construir (en orden de prioridad):**
-  1. Cursos, inscripciones y prácticas por materia.
-  2. Registro de entradas y salidas de alumnos y docentes en laboratorio.
-  3. Solicitudes de ingreso a laboratorios y notificaciones de administración.
-  4. Consulta y reportes de la bitácora.
-  5. Carga masiva de alumnos desde archivo.
-  6. Iniciar el frontend en `web/` con React + Vite.
+  1. Registro de entradas y salidas de alumnos y docentes en laboratorio.
+  2. Solicitudes de ingreso a laboratorios y notificaciones de administración.
+  3. Consulta y reportes de la bitácora.
+  4. Carga masiva de alumnos desde archivo.
+  5. Iniciar el frontend en `web/` con React + Vite.
 
 ## 6. Documentación Detallada
 

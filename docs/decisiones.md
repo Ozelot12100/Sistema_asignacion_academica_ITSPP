@@ -4,7 +4,7 @@ Registro de las decisiones que dan forma al sistema. Cada una dice qué se decid
 
 Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](stack-tecnologico.md).
 
-Última actualización: 4 de octubre de 2026.
+Última actualización: 10 de octubre de 2026.
 
 ## Resumen
 
@@ -30,6 +30,7 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 | D18 | Reparto provisional de permisos por rol | Provisional |
 | D19 | La bitácora se llena sola | Vigente |
 | D20 | Lo que tiene historial se desactiva, no se borra | Vigente |
+| D21 | El docente lleva la lista de sus cursos y las prácticas de sus materias | Provisional |
 
 ## D1. Se continúa el sistema existente en lugar de empezar de cero
 
@@ -204,6 +205,18 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 **Decisión.** Usuarios, alumnos, laboratorios y carreras tienen un indicador de activo. La base impide borrar un registro del que dependen otros, y la API lo informa con un 409.
 
 **Por qué.** Borrar a un alumno borraría o dejaría huérfanas sus asistencias, y los reportes de semestres pasados dejarían de cuadrar.
+
+## D21. El docente lleva la lista de sus cursos y las prácticas de sus materias
+
+**Decisión.** Los cursos los crea y edita solo el administrador. Inscribir y dar de baja alumnos lo hacen el administrador, el laboratorista y el docente que imparte ese curso. Las prácticas de una materia las edita el administrador o cualquier docente que imparta un curso de esa materia.
+
+**Por qué.** Es una extensión de D18 con el mismo criterio: lo más restrictivo que deja operar. Quien conoce la lista de un grupo y sus prácticas es su docente; si todo pasara por el administrador, sería un cuello de botella cada inicio de semestre.
+
+**Consecuencia.** Como las prácticas son de la materia y no del curso, dos docentes que imparten la misma materia editan la misma lista de prácticas.
+
+**Depende de.** La respuesta del instituto sobre si las prácticas son las mismas para todos los docentes de una materia. Si no lo son, las prácticas pasan a `cursos` y cada docente edita solo las suyas.
+
+**Regla relacionada.** Un curso solo se asigna a un docente con la cuenta activa, pero lo conserva si la cuenta se desactiva después, para no perder quién lo impartió.
 
 ## Decisiones abiertas
 
