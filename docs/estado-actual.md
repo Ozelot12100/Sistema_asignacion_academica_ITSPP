@@ -85,7 +85,7 @@ Además: subir a .NET 10, que requiere instalar el SDK.
 
 ### Bloqueado por respuestas
 
-- **Registro de entrada.** Depende de cómo se identifica el alumno (teclea su matrícula, escanea su credencial o lo registra el laboratorista).
+- **Registro de entrada.** Ya se sabe que el alumno se identifica con su número de control (la matrícula, por ejemplo `23303080`). Falta saber quién lo captura y desde qué dispositivo, y quién registra la salida.
 - **Permisos por rol.** Hay un reparto provisional; el definitivo depende de qué puede hacer cada quien según el instituto.
 - **Carga de alumnos.** Depende de si se pueden importar del sistema escolar.
 - **Prácticas.** Hoy pertenecen a la materia. Si cada docente define las suyas, hay que moverlas al curso.

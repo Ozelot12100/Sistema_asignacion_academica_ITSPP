@@ -68,7 +68,7 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Descartado.** Aplicaciones nativas (Flutter, React Native): solo se justifican con notificaciones avanzadas, uso sin conexión o acceso al hardware del teléfono.
 
-**Pendiente de diseño.** Desde qué dispositivo y cómo se identifica el alumno al entrar. Depende de la respuesta del instituto.
+**Pendiente de diseño.** Desde qué dispositivo se registra la entrada. El alumno se identifica con su número de control (la matrícula).
 
 ## D6. El backend entrega también el frontend
 
@@ -224,7 +224,7 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 |---|---|
 | Aprobación del esquema | Revisión del equipo |
 | Nombre del repositorio en GitHub | Acordarlo en el equipo |
-| Cómo se identifica el alumno al entrar | Respuesta del instituto |
+| Cómo se registra la entrada del alumno | Se identifica con su número de control (la matrícula); falta definir quién lo captura y desde qué dispositivo |
 | Permisos definitivos de cada rol | Respuesta del instituto |
 | Dónde se aloja el sistema | Confirmar servidor de la universidad o Hostinger, y su sistema operativo |
 | Subir a .NET 10 | Instalar el SDK en los equipos de desarrollo |

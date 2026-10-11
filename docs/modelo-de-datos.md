@@ -138,7 +138,7 @@ Para el equipo:
 Para el instituto:
 
 - ¿Cuántos laboratorios hay y cuántos equipos tiene cada uno?
-- ¿Cómo se identifica el alumno al entrar: teclea su matrícula, escanea su credencial, o lo registra el laboratorista?
+- ¿Quién captura el número de control al entrar: el alumno lo teclea, escanea su credencial, o lo registra el laboratorista? (Respondido el 10 de octubre de 2026: el alumno se identifica con su número de control, que es la matrícula, por ejemplo `23303080`.)
 - ¿Quién registra la salida, y qué pasa si alguien se va sin registrarla?
 - ¿Cada laboratorista atiende un laboratorio fijo o cualquiera?
 - ¿Quién aprueba las solicitudes de ingreso?
