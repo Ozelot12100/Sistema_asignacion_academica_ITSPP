@@ -36,6 +36,8 @@ public class Validador
         if (condicion) Agregar(campo, mensaje);
     }
 
+    public IReadOnlyDictionary<string, string[]> Errores => _errores;
+
     public IResult? Error => _errores.Count == 0 ? null : Results.ValidationProblem(_errores);
 
     private void Agregar(string campo, string mensaje) => _errores.TryAdd(campo, [mensaje]);

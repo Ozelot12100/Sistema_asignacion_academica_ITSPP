@@ -46,12 +46,14 @@ public class AsistenciasDbContext(
         v => v.Kind == DateTimeKind.Local ? v.ToUniversalTime() : v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
     // Cada alta, cambio o baja queda anotado en la bitácora junto con quién lo hizo, en la misma transacción.
-    // Las asistencias no se anotan: ellas mismas son el registro.
+    // Las asistencias no se anotan, porque ellas mismas son el registro; salvo cuando se borra una,
+    // que es justo cuando el registro desaparece.
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var cambios = ChangeTracker.Entries()
-            .Where(e => e.Entity is not (EntradaBitacora or Asistencia)
-                && e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .Where(e => e.Entity is not EntradaBitacora
+                && e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted
+                && (e.Entity is not Asistencia || e.State == EntityState.Deleted))
             .Select(e => new CambioPendiente(e, e.State, e.State == EntityState.Deleted ? Llave(e) : null, Detalles(e)))
             .ToList();
 

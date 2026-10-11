@@ -11,4 +11,8 @@ public static class ReglasClase
     // El laboratorista también la cierra, para liberar el laboratorio si el docente se fue sin hacerlo
     public static bool PuedeCerrar(Rol rol, int usuarioId, int? docenteDelCurso) =>
         rol == Rol.Laboratorista || PuedeAbrir(rol, usuarioId, docenteDelCurso);
+
+    // Registrar a mano a un alumno o quitar una entrada equivocada: los mismos que pueden cerrar la clase
+    public static bool PuedeCorregir(Rol rol, int usuarioId, int? docenteDelCurso) =>
+        PuedeCerrar(rol, usuarioId, docenteDelCurso);
 }

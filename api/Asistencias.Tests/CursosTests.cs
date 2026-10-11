@@ -161,6 +161,35 @@ public class CursosTests(ApiDePrueba api) : IClassFixture<ApiDePrueba>
     }
 
     [Fact]
+    public async Task Se_inscribe_una_lista_de_numeros_de_control_y_se_informa_cuales_no()
+    {
+        var admin = await api.ClienteConSesionAsync(Rol.Admin);
+        var otroDocente = await api.ClienteConSesionAsync(Rol.Docente);
+        var cursoId = await CrearCurso(admin);
+        var ruta = $"/api/cursos/{cursoId}/alumnos";
+        async Task<string> Alumno(bool activo = true)
+        {
+            var matricula = Unico("L");
+            await IdCreado(await admin.PostAsJsonAsync("/api/alumnos", new { matricula, nombre = "Ana", apellido = "Ruiz", activo }));
+            return matricula;
+        }
+        var (a, b, yaInscrito, inactivo) = (await Alumno(), await Alumno(), await Alumno(), await Alumno(activo: false));
+        await admin.PostAsJsonAsync(ruta, new { matriculas = new[] { yaInscrito } });
+
+        var respuesta = await admin.PostAsJsonAsync(ruta, new { matriculas = new[] { a, $" {b} ", a, yaInscrito, inactivo, "no-existe" } });
+
+        var cuerpo = await respuesta.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.Equal(2, (int)cuerpo!["inscritos"]!);
+        Assert.Equal(1, (int)cuerpo["yaInscritos"]!);
+        Assert.Equal(["no-existe"], cuerpo["noEncontrados"]!.AsArray().Select(m => (string)m!));
+        Assert.Equal([inactivo], cuerpo["desactivados"]!.AsArray().Select(m => (string)m!));
+        Assert.Equal(3, (await admin.GetFromJsonAsync<JsonArray>(ruta))!.Count);
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync(ruta, new { matriculas = Array.Empty<string>() })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await otroDocente.PostAsJsonAsync(ruta, new { matriculas = new[] { a } })).StatusCode);
+    }
+
+    [Fact]
     public async Task No_se_inscribe_a_un_alumno_desactivado_ni_a_uno_inexistente()
     {
         var admin = await api.ClienteConSesionAsync(Rol.Admin);

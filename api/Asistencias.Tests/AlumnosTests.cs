@@ -83,6 +83,52 @@ public class AlumnosTests(ApiDePrueba api) : IClassFixture<ApiDePrueba>
     }
 
     [Fact]
+    public async Task La_carga_en_lote_crea_a_los_nuevos_y_actualiza_a_los_existentes()
+    {
+        var cliente = await api.ClienteConSesionAsync(Rol.Laboratorista);
+        var docente = await api.ClienteConSesionAsync(Rol.Docente);
+        var (existente, nuevo) = (Matricula(), Matricula());
+        await cliente.PostAsJsonAsync("/api/alumnos", new { matricula = existente, nombre = "Eva", apellido = "Luna", semestre = 1 });
+        object[] lote =
+        [
+            new { matricula = existente, nombre = "Eva", apellido = "Luna", semestre = 2 },
+            new { matricula = nuevo, nombre = "Iván", apellido = "Soto", semestre = 1 },
+        ];
+
+        var respuesta = await cliente.PostAsJsonAsync("/api/alumnos/lote", lote);
+
+        var cuerpo = await respuesta.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.Equal(1, (int)cuerpo!["creados"]!);
+        Assert.Equal(1, (int)cuerpo["actualizados"]!);
+        var actualizado = await cliente.GetFromJsonAsync<JsonObject>($"/api/alumnos?buscar={existente}");
+        Assert.Equal(2, (int)actualizado!["elementos"]![0]!["semestre"]!);
+        Assert.Equal(HttpStatusCode.Forbidden, (await docente.PostAsJsonAsync("/api/alumnos/lote", lote)).StatusCode);
+    }
+
+    [Fact]
+    public async Task La_carga_en_lote_no_guarda_nada_si_un_renglon_tiene_error()
+    {
+        var cliente = await api.ClienteConSesionAsync(Rol.Laboratorista);
+        var (bueno, repetido) = (Matricula(), Matricula());
+        object[] lote =
+        [
+            new { matricula = bueno, nombre = "Ana", apellido = "Ruiz" },
+            new { matricula = repetido, nombre = "Luis", apellido = "Mora" },
+            new { matricula = repetido, nombre = "Luis", apellido = "Mora" },
+            new { matricula = Matricula(), nombre = "", apellido = "Paz", semestre = 0 },
+        ];
+
+        var respuesta = await cliente.PostAsJsonAsync("/api/alumnos/lote", lote);
+
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+        var errores = (await respuesta.Content.ReadFromJsonAsync<JsonObject>())!["errors"]!.AsObject();
+        Assert.Equal(["[2].matricula", "[3].nombre", "[3].semestre"], errores.Select(e => e.Key).Order());
+        Assert.Equal(0, (int)(await cliente.GetFromJsonAsync<JsonObject>($"/api/alumnos?buscar={bueno}"))!["total"]!);
+        Assert.Equal(HttpStatusCode.BadRequest, (await cliente.PostAsJsonAsync("/api/alumnos/lote", Array.Empty<object>())).StatusCode);
+    }
+
+    [Fact]
     public async Task Busca_por_matricula_o_nombre_y_pagina_los_resultados()
     {
         var cliente = await api.ClienteConSesionAsync(Rol.Laboratorista);

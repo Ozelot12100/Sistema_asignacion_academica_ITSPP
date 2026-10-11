@@ -15,9 +15,12 @@ public record AlumnoEntrada(
 
 public record Pagina<T>(int Total, int NumeroPagina, int Tamano, IReadOnlyList<T> Elementos);
 
+public record LoteAlumnosDto(int Creados, int Actualizados);
+
 public static class AlumnosEndpoints
 {
     public const int TamanoMaximo = 100;
+    public const int LoteMaximo = 2000;
 
     public static void MapAlumnos(this IEndpointRouteBuilder app)
     {
@@ -60,6 +63,40 @@ public static class AlumnosEndpoints
             db.Alumnos.Add(alumno);
             if (await db.GuardarAsync() is { } conflicto) return conflicto;
             return Results.Created($"/api/alumnos/{alumno.Id}", await ADto(db.Alumnos.Where(a => a.Id == alumno.Id)).SingleAsync());
+        }).RequireAuthorization(Politicas.Personal);
+
+        // Carga de una lista completa: crea a los que no existen y actualiza a los que sí, según la matrícula.
+        // Si un solo renglón tiene un error no se guarda ninguno, para no dejar la lista a medias.
+        grupo.MapPost("/lote", async (List<AlumnoEntrada> entradas, AsistenciasDbContext db) =>
+        {
+            if (entradas.Count is 0 or > LoteMaximo)
+                return Results.Problem(statusCode: 400, title: $"La lista debe tener entre 1 y {LoteMaximo} alumnos.");
+
+            var matriculas = entradas.Select(e => e.Matricula?.Trim() ?? "").ToList();
+            var existentes = await db.Alumnos.Where(a => matriculas.Contains(a.Matricula)).ToListAsync();
+            var porMatricula = existentes.ToDictionary(a => a.Matricula, StringComparer.OrdinalIgnoreCase);
+            var errores = new Dictionary<string, string[]>();
+            var vistas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var creados = 0;
+
+            for (var i = 0; i < entradas.Count; i++)
+            {
+                var v = new Validador();
+                v.Si(matriculas[i].Length > 0 && !vistas.Add(matriculas[i]), "matricula", "Está repetida en la lista.");
+                if (!porMatricula.TryGetValue(matriculas[i], out var alumno))
+                {
+                    alumno = new Alumno { Matricula = "", Nombre = "", Apellido = "" };
+                    db.Alumnos.Add(alumno);
+                    creados++;
+                }
+                Aplicar(alumno, entradas[i], v);
+                foreach (var (campo, mensajes) in v.Errores)
+                    errores[$"[{i}].{campo}"] = mensajes;
+            }
+            if (errores.Count > 0) return Results.ValidationProblem(errores);
+
+            if (await db.GuardarAsync() is { } conflicto) return conflicto;
+            return Results.Ok(new LoteAlumnosDto(creados, entradas.Count - creados));
         }).RequireAuthorization(Politicas.Personal);
 
         grupo.MapPut("/{id:int}", async (int id, AlumnoEntrada entrada, AsistenciasDbContext db) =>

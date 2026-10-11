@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Asistencias.Api.Alumnos;
+using Asistencias.Api.Auditoria;
 using Asistencias.Api.Autenticacion;
 using Asistencias.Api.Catalogos;
 using Asistencias.Api.Clases;
@@ -88,6 +89,7 @@ app.MapAlumnos();
 app.MapCursos();
 app.MapPracticas();
 app.MapClases();
+app.MapBitacora();
 
 await app.CrearAdminInicialAsync();
 

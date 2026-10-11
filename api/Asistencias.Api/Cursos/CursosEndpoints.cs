@@ -14,8 +14,15 @@ public record CursoEntrada(int? MateriaId, int? PeriodoId, string? Grupo, int? D
 
 public record InscritoDto(int Id, string Matricula, string Nombre, string Apellido, bool Activo);
 
+public record ListaInscripcionEntrada(List<string>? Matriculas);
+
+public record ListaInscripcionDto(
+    int Inscritos, int YaInscritos, IReadOnlyList<string> NoEncontrados, IReadOnlyList<string> Desactivados);
+
 public static class CursosEndpoints
 {
+    public const int ListaMaxima = 500;
+
     public static void MapCursos(this IEndpointRouteBuilder app)
     {
         var grupo = app.MapGroup("/api/cursos").WithTags("Cursos").RequireAuthorization();
@@ -103,6 +110,38 @@ public static class CursosEndpoints
 
             db.Inscripciones.Add(new Inscripcion { CursoId = id, AlumnoId = alumnoId });
             return await db.GuardarAsync() ?? Results.NoContent();
+        });
+
+        // Inscribe una lista de números de control de una vez. Inscribe a los que puede y dice cuáles no y por qué.
+        grupo.MapPost("/{id:int}/alumnos", async (
+            int id, ListaInscripcionEntrada entrada, ClaimsPrincipal principal, AsistenciasDbContext db) =>
+        {
+            var curso = await db.Cursos.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id);
+            if (curso is null) return Persistencia.NoExiste("El curso");
+            if (!ReglasCurso.PuedeInscribir(principal.RolUsuario(), principal.IdUsuario(), curso.DocenteId))
+                return Results.Forbid();
+
+            var matriculas = (entrada.Matriculas ?? [])
+                .Select(m => m?.Trim() ?? "").Where(m => m.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            if (matriculas.Count is 0 or > ListaMaxima)
+                return Results.Problem(statusCode: 400, title: $"La lista debe tener entre 1 y {ListaMaxima} números de control.");
+
+            var alumnos = await db.Alumnos.AsNoTracking()
+                .Where(a => matriculas.Contains(a.Matricula))
+                .Select(a => new { a.Id, a.Matricula, a.Activo })
+                .ToListAsync();
+            var yaInscritos = (await db.Inscripciones.Where(i => i.CursoId == id).Select(i => i.AlumnoId).ToListAsync()).ToHashSet();
+            var porInscribir = alumnos.Where(a => a.Activo && !yaInscritos.Contains(a.Id)).ToList();
+
+            db.Inscripciones.AddRange(porInscribir.Select(a => new Inscripcion { CursoId = id, AlumnoId = a.Id }));
+            if (await db.GuardarAsync() is { } conflicto) return conflicto;
+
+            return Results.Ok(new ListaInscripcionDto(
+                porInscribir.Count,
+                alumnos.Count(a => yaInscritos.Contains(a.Id)),
+                matriculas.Where(m => !alumnos.Any(a => string.Equals(a.Matricula, m, StringComparison.OrdinalIgnoreCase))).ToList(),
+                alumnos.Where(a => !a.Activo && !yaInscritos.Contains(a.Id)).Select(a => a.Matricula).ToList()));
         });
 
         grupo.MapDelete("/{id:int}/alumnos/{alumnoId:int}", async (

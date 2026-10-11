@@ -131,6 +131,89 @@ public class ClasesTests(ApiDePrueba api) : IClassFixture<ApiDePrueba>
     }
 
     [Fact]
+    public async Task La_lista_de_la_clase_dice_quien_asistio_y_quien_falto()
+    {
+        var e = await CrearEscenario();
+        var presente = await InscribirAlumno(e);
+        var ausente = await InscribirAlumno(e);
+        var claseId = await IdCreado(await e.Docente.PostAsJsonAsync("/api/clases", new { cursoId = e.CursoId }));
+        await RegistrarEntrada(presente, "PC-1");
+
+        var lista = await e.Docente.GetFromJsonAsync<JsonObject>($"/api/clases/{claseId}/lista");
+
+        Assert.Equal(2, (int)lista!["inscritos"]!);
+        Assert.Equal(1, (int)lista["presentes"]!);
+        Assert.Equal(1, (int)lista["faltas"]!);
+        var renglones = lista["alumnos"]!.AsArray().ToDictionary(r => (string)r!["matricula"]!, r => r!);
+        Assert.True((bool)renglones[presente]["presente"]!);
+        Assert.Equal("PC-1", (string)renglones[presente]["equipo"]!);
+        Assert.False((bool)renglones[ausente]["presente"]!);
+        Assert.Null(renglones[ausente]["horaEntrada"]);
+        Assert.Equal(HttpStatusCode.NotFound, (await e.Docente.GetAsync("/api/clases/999999/lista")).StatusCode);
+    }
+
+    [Fact]
+    public async Task El_resumen_del_curso_cuenta_asistencias_y_faltas_por_alumno()
+    {
+        var e = await CrearEscenario();
+        var constante = await InscribirAlumno(e);
+        var irregular = await InscribirAlumno(e);
+
+        var sinClases = await e.Docente.GetFromJsonAsync<JsonObject>($"/api/cursos/{e.CursoId}/asistencia");
+        for (var i = 0; i < 3; i++)
+        {
+            var claseId = await IdCreado(await e.Docente.PostAsJsonAsync("/api/clases", new { cursoId = e.CursoId }));
+            await RegistrarEntrada(constante);
+            if (i == 0) await RegistrarEntrada(irregular);
+            await e.Docente.PostAsync($"/api/clases/{claseId}/cerrar", null);
+        }
+        var resumen = await e.Docente.GetFromJsonAsync<JsonObject>($"/api/cursos/{e.CursoId}/asistencia");
+
+        Assert.Equal(0, (int)sinClases!["totalClases"]!);
+        Assert.All(sinClases["alumnos"]!.AsArray(), a => Assert.Null(a!["porcentaje"]));
+        Assert.Equal(3, (int)resumen!["totalClases"]!);
+        var alumnos = resumen["alumnos"]!.AsArray().ToDictionary(a => (string)a!["matricula"]!, a => a!);
+        Assert.Equal(3, (int)alumnos[constante]["asistencias"]!);
+        Assert.Equal(100m, (decimal)alumnos[constante]["porcentaje"]!);
+        Assert.Equal(1, (int)alumnos[irregular]["asistencias"]!);
+        Assert.Equal(2, (int)alumnos[irregular]["faltas"]!);
+        Assert.Equal(33.3m, (decimal)alumnos[irregular]["porcentaje"]!);
+    }
+
+    [Fact]
+    public async Task Quien_lleva_la_clase_registra_a_mano_y_quita_entradas_equivocadas()
+    {
+        var e = await CrearEscenario();
+        var otroDocente = await api.ClienteConSesionAsync(Rol.Docente);
+        var laboratorista = await api.ClienteConSesionAsync(Rol.Laboratorista);
+        var matricula = await InscribirAlumno(e);
+        var noInscrito = await InscribirAlumno(e, inscrito: false);
+        var claseId = await IdCreado(await e.Docente.PostAsJsonAsync("/api/clases", new { cursoId = e.CursoId }));
+        var ruta = $"/api/clases/{claseId}/asistencias";
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await otroDocente.PostAsJsonAsync(ruta, new { matricula })).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await e.Docente.PostAsJsonAsync(ruta, new { matricula = noInscrito })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await e.Docente.PostAsJsonAsync(ruta, new { matricula = "no-existe" })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await e.Docente.PostAsJsonAsync(ruta, new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await e.Docente.PostAsJsonAsync(ruta, new { matricula, equipo = "PC-1" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await laboratorista.PostAsJsonAsync(ruta, new { matricula })).StatusCode);
+
+        var asistenciaId = (long)Assert.Single((await e.Docente.GetFromJsonAsync<JsonArray>(ruta))!)!["asistenciaId"]!;
+        Assert.Equal(HttpStatusCode.Forbidden, (await otroDocente.DeleteAsync($"{ruta}/{asistenciaId}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await laboratorista.DeleteAsync($"{ruta}/{asistenciaId}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await laboratorista.DeleteAsync($"{ruta}/{asistenciaId}")).StatusCode);
+
+        // Al quitarla, el alumno y el equipo quedan libres para registrarse de nuevo
+        Assert.Equal(HttpStatusCode.OK, (await RegistrarEntrada(matricula, "PC-1")).StatusCode);
+        var enBitacora = await api.EnBaseAsync(db => Task.FromResult(db.Bitacora
+            .Count(b => b.Entidad == "asistencias" && b.EntidadId == asistenciaId.ToString() && b.Accion == "eliminar")));
+        Assert.Equal(1, enBitacora);
+
+        await e.Docente.PostAsync($"/api/clases/{claseId}/cerrar", null);
+        Assert.Equal(HttpStatusCode.Conflict, (await e.Docente.PostAsJsonAsync(ruta, new { matricula })).StatusCode);
+    }
+
+    [Fact]
     public async Task Solo_abre_la_clase_el_docente_del_curso_o_el_administrador()
     {
         var e = await CrearEscenario();
