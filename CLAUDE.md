@@ -11,8 +11,8 @@ Guía de contexto y trabajo para asistentes de desarrollo (Claude Code / Antigra
 ## 2. Stack Tecnológico
 
 * **Backend:** .NET 9 (C# 13), ASP.NET Core Minimal APIs, EF Core 9 con Pomelo (`Pomelo.EntityFrameworkCore.MySql`), Scalar para documentación OpenAPI interactiva (`/scalar/v1`).
-* **Base de datos:** MariaDB 11.8 / MySQL 9.4. Esquema relacional de 14 tablas en `db/esquema.sql` (utf8mb4, snake_case) y datos iniciales en `db/datos-iniciales.sql`.
-* **Pruebas:** xUnit en `api/Asistencias.Tests` (79 pruebas automáticas que cubren autenticación, roles, catálogos, alumnos, cursos, inscripciones, prácticas y bitácora).
+* **Base de datos:** MariaDB 11.8 / MySQL 9.4. Esquema relacional de 15 tablas en `db/esquema.sql` (utf8mb4, snake_case) y datos iniciales en `db/datos-iniciales.sql`.
+* **Pruebas:** xUnit en `api/Asistencias.Tests` (94 pruebas automáticas que cubren autenticación, roles, catálogos, alumnos, cursos, inscripciones, prácticas, clases, registro de entrada y bitácora).
 * **Frontend:** Carpeta `web/`, pendiente de iniciar en React + TypeScript + Vite.
 
 ## 3. Comandos Frecuentes
@@ -51,14 +51,14 @@ dotnet run --project api/Asistencias.Api
   * Catálogos completos: laboratorios, equipos (libre, en uso, fuera de servicio con notas), carreras, periodos y materias.
   * Gestión de alumnos con búsqueda paginada por matrícula o nombre.
   * Cursos, inscripciones de alumnos y prácticas por materia (`api/Asistencias.Api/Cursos/`).
+  * Registro de entrada por clase (`api/Asistencias.Api/Clases/`): el docente abre la clase, el alumno inscrito registra su entrada con su número de control sin iniciar sesión (`POST /api/registro/entrada`), y al cerrar la clase se registra la salida de todos.
   * Bitácora de auditoría automática ante altas, bajas y modificaciones.
-  * 79 pruebas automáticas pasando.
+  * 94 pruebas automáticas pasando.
 * **Siguientes tareas por construir (en orden de prioridad):**
-  1. Registro de entradas y salidas de alumnos y docentes en laboratorio.
-  2. Solicitudes de ingreso a laboratorios y notificaciones de administración.
-  3. Consulta y reportes de la bitácora.
-  4. Carga masiva de alumnos desde archivo.
-  5. Iniciar el frontend en `web/` con React + Vite.
+  1. Reportes de asistencia (por clase, curso, alumno y laboratorio) y consulta de la bitácora.
+  2. Uso del laboratorio fuera de clase: solicitudes de ingreso y notificaciones de administración.
+  3. Carga masiva de alumnos desde archivo.
+  4. Iniciar el frontend en `web/` con React + Vite.
 
 ## 6. Documentación Detallada
 

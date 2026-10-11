@@ -12,7 +12,7 @@ El repositorio se recibió con una API de horarios (profesores, aulas, grupos, c
 
 | Parte | Detalle |
 |---|---|
-| Base de datos | Esquema de 14 tablas en [db/esquema.sql](../db/esquema.sql), con datos iniciales |
+| Base de datos | Esquema de 15 tablas en [db/esquema.sql](../db/esquema.sql), con datos iniciales |
 | Inicio de sesión | `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/yo`. Cookie de sesión, contraseñas con hash, tres roles |
 | Primer administrador | Se crea al arrancar a partir de la configuración, solo si no existe ninguno |
 | Cambio de contraseña | Cada quien cambia la suya si conoce la actual; el administrador restablece la de otros |
@@ -24,6 +24,8 @@ El repositorio se recibió con una API de horarios (profesores, aulas, grupos, c
 | Cursos | Alta, edición, baja, consulta y listado por periodo, materia, docente o laboratorio, con el número de inscritos |
 | Inscripciones | Inscribir y dar de baja alumnos de un curso, lista de un curso y cursos de un alumno |
 | Prácticas | Alta, edición, baja y listado de las prácticas de cada materia, ordenadas por número |
+| Clases | El docente abre la clase de su curso en un laboratorio y la cierra; listado de clases y de quién asistió a cada una |
+| Registro de entrada | `POST /api/registro/entrada`, sin sesión: el alumno inscrito registra su entrada con su número de control mientras la clase está abierta, y puede indicar su equipo. Al cerrar la clase se registra la salida de todos |
 | Bitácora | Cada alta, cambio o baja queda anotado automáticamente con su autor |
 | Documentación de la API | `/openapi/v1.json` y `/scalar/v1`, solo en desarrollo |
 | Integración continua | Compila y corre las pruebas contra MariaDB en cada cambio |
@@ -40,9 +42,13 @@ El repositorio se recibió con una API de horarios (profesores, aulas, grupos, c
 | Crear, editar y borrar cursos | Sí | No | No |
 | Inscribir y dar de baja alumnos de un curso | Sí | Sí | Solo en los cursos que imparte |
 | Crear, editar y borrar prácticas | Sí | No | Solo de las materias que imparte |
+| Abrir una clase | Sí | No | Solo de los cursos que imparte |
+| Cerrar una clase | Sí | Sí | Solo de los cursos que imparte |
 | Gestionar usuarios | Sí | No | No |
 
-Este reparto es una suposición razonable, no algo que haya definido el instituto. Ver las decisiones D18 y D21 en [decisiones.md](decisiones.md).
+Los alumnos no tienen cuenta: lo único que hacen es registrar su entrada con su número de control.
+
+Este reparto es una suposición razonable, no algo que haya definido el instituto. Ver las decisiones D18, D21 y D22 en [decisiones.md](decisiones.md).
 
 ### Reglas que conviene conocer
 
@@ -53,18 +59,22 @@ Este reparto es una suposición razonable, no algo que haya definido el institut
 - No hay dos cursos de la misma materia, periodo y grupo, ni dos prácticas con el mismo número en una materia.
 - Inscribir a un alumno ya inscrito no es un error. A un alumno desactivado no se le inscribe (409).
 - Borrar un curso borra sus inscripciones. Un curso o una práctica con asistencias no se puede borrar.
+- Un laboratorio tiene a lo más una clase abierta, y un curso también.
+- Solo registra su entrada un alumno activo, inscrito en un curso con la clase abierta, y que no esté ya dentro. Si indica un equipo, debe ser del laboratorio de la clase, estar libre y en servicio.
 
 Medidas de seguridad ya incluidas:
 
-- Todas las rutas piden sesión, salvo el inicio de sesión y `/api/salud`.
+- Todas las rutas piden sesión, salvo el inicio de sesión, `/api/salud` y el registro de entrada del alumno.
+- El registro de entrada acepta 120 intentos por minuto por dirección; después responde 429.
 - El inicio de sesión acepta 10 intentos por minuto por dirección; después responde 429.
 - La respuesta es la misma si el correo no existe o si la contraseña es incorrecta.
 - Desactivar una cuenta o cambiarle el rol invalida su sesión abierta en la siguiente petición.
 
 ## Qué se verificó y qué no
 
-- **Verificado.** 79 pruebas automáticas pasan. Cubren inicio y cierre de sesión, invalidación de sesiones, permisos de cada rol, validación de datos, duplicados, borrados bloqueados, búsqueda de alumnos, estado de los equipos, cursos, inscripciones, prácticas y la bitácora. El inicio de sesión, el límite de intentos y el flujo de cursos, inscripciones y prácticas también se probaron a mano con la API en marcha.
-- **Versión de la base en las pruebas.** La integración continua corre las 79 contra MariaDB 11.8, la misma versión del servidor actual; pasaron en `main` el 10 de octubre de 2026. En la máquina de desarrollo se corren contra MariaDB 11.5.
+- **Verificado.** 94 pruebas automáticas pasan. Cubren inicio y cierre de sesión, invalidación de sesiones, permisos de cada rol, validación de datos, duplicados, borrados bloqueados, búsqueda de alumnos, estado de los equipos, cursos, inscripciones, prácticas, clases, registro de entrada y la bitácora. El inicio de sesión, el límite de intentos y el flujo de cursos, inscripciones y prácticas también se probaron a mano con la API en marcha.
+- **Versión de la base en las pruebas.** La integración continua las corre contra MariaDB 11.8, la misma versión del servidor actual. En la máquina de desarrollo se corren contra MariaDB 11.5.
+- **Sin probar.** El límite de intentos del registro de entrada no tiene prueba automática. Un laboratorio completo que comparta una sola dirección de salida a internet podría alcanzarlo si el sistema se aloja fuera del instituto.
 - **Verificado en la base.** Las restricciones del esquema rechazan dos personas en un mismo equipo, un alumno dentro dos veces, un equipo de otro laboratorio, una salida anterior a la entrada y una solicitud resuelta sin fecha.
 - **Sin verificar.** Nada se ha desplegado en un servidor.
 
@@ -74,9 +84,9 @@ Medidas de seguridad ya incluidas:
 
 En este orden:
 
-1. Registro de entrada y salida.
-2. Solicitudes de ingreso y avisos.
-3. Consulta de la bitácora y reportes.
+1. Reportes de asistencia (por clase, curso, alumno y laboratorio, incluidas las faltas) y consulta de la bitácora.
+2. Uso del laboratorio fuera de clase: solicitudes de ingreso, avisos, y entrada de docentes e invitados.
+3. Corregir un registro: que el docente pueda quitar una entrada equivocada o registrar a un alumno a mano.
 4. Carga masiva de alumnos desde un archivo, incluida la inscripción de una lista completa a un curso.
 5. Frontend: iniciar el proyecto en `web/` y construir las pantallas.
 6. Despliegue en el servidor y respaldos.
@@ -85,7 +95,8 @@ Además: subir a .NET 10, que requiere instalar el SDK.
 
 ### Bloqueado por respuestas
 
-- **Registro de entrada.** Ya se sabe que el alumno se identifica con su número de control (la matrícula, por ejemplo `23303080`). Falta saber quién lo captura y desde qué dispositivo, y quién registra la salida.
+- **Uso fuera de clase.** Depende de quién autoriza a un alumno a usar un laboratorio cuando no tiene clase.
+- **Alojamiento.** Se dijo a la vez que el servidor será local y que se instalará en Hostinger. De eso depende si hace falta proteger el registro de entrada con un código de clase.
 - **Permisos por rol.** Hay un reparto provisional; el definitivo depende de qué puede hacer cada quien según el instituto.
 - **Carga de alumnos.** Depende de si se pueden importar del sistema escolar.
 - **Prácticas.** Hoy pertenecen a la materia. Si cada docente define las suyas, hay que moverlas al curso.

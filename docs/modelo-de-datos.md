@@ -4,13 +4,13 @@ Qué hace el sistema según la base de datos recibida, qué problemas tenía esa
 
 **Estado: propuesta.** El esquema nuevo está en [db/esquema.sql](../db/esquema.sql) y se probó en MariaDB 11.8. Falta que el equipo lo revise y que el instituto responda las preguntas del final.
 
-Última actualización: 4 de octubre de 2026.
+Última actualización: 10 de octubre de 2026.
 
 ## Qué hace el sistema
 
 Controla quién usa los laboratorios de cómputo del ITSPP:
 
-1. **Registro de entrada y salida.** Un alumno, docente o invitado entra a un laboratorio y ocupa un equipo (o trae el suyo). Al salir se registra la hora de salida.
+1. **Registro de entrada y salida.** El docente abre la clase de su curso en un laboratorio. Mientras está abierta, cada alumno inscrito registra su propia entrada con su número de control, desde cualquier computadora o teléfono, y puede indicar el equipo que ocupa. Cuando el docente cierra la clase se registra la salida de todos. El alumno nunca registra su salida.
 2. **Estado de los equipos.** Para cada equipo se sabe si está libre, en uso o fuera de servicio, y quién lo está usando.
 3. **Solicitudes de ingreso.** Un alumno pide usar un laboratorio fuera de su clase, con un motivo; alguien la aprueba o la rechaza.
 4. **Materias y prácticas.** Cada materia tiene un docente, un periodo, un laboratorio y una lista de prácticas.
@@ -52,6 +52,7 @@ Lo que estaba bien y se conserva: la contraseña del administrador ya se guardab
 | `cursos` | Una materia impartida por un docente a un grupo en un periodo |
 | `inscripciones` | Qué alumnos llevan cada curso |
 | `practicas` | Prácticas de cada materia |
+| `clases` | Cada sesión de clase de un curso en un laboratorio: quién la abrió, cuándo y cuándo se cerró |
 | `solicitudes_ingreso` | Solicitudes de los alumnos y quién las resolvió |
 | `asistencias` | Cada entrada a un laboratorio, con su salida |
 | `notificaciones` | Avisos al administrador |
@@ -78,6 +79,11 @@ erDiagram
     equipos ||--o{ asistencias : "se ocupa en"
     alumnos ||--o{ asistencias : entra
     usuarios ||--o{ asistencias : "entra (docente)"
+    cursos ||--o{ clases : "se da en"
+    laboratorios ||--o{ clases : "sede de"
+    practicas ||--o{ clases : "se trabaja en"
+    usuarios ||--o{ clases : abre
+    clases ||--o{ asistencias : registra
     cursos ||--o{ asistencias : "motivo"
     practicas ||--o{ asistencias : "motivo"
     solicitudes_ingreso ||--o{ asistencias : autoriza
@@ -98,7 +104,7 @@ erDiagram
 | `notificaciones_admin` | Pasa a `notificaciones`, ligada al laboratorio y opcionalmente al equipo |
 | `logs` | Pasa a `bitacora`, ligada al usuario y a la entidad afectada |
 
-Tablas nuevas: `carreras`, `periodos`, `laboratorios`, `cursos`, `inscripciones`.
+Tablas nuevas: `carreras`, `periodos`, `laboratorios`, `cursos`, `inscripciones`, `clases`.
 
 ### Reglas que ahora hace cumplir la base
 
@@ -106,6 +112,7 @@ Estas reglas ya no dependen de que la aplicación las recuerde. Todas se probaro
 
 - Un equipo no puede tener dos ocupantes a la vez.
 - Un alumno no puede estar dentro dos veces a la vez.
+- Un laboratorio no puede tener dos clases abiertas a la vez, ni un curso dos clases abiertas.
 - El equipo de una asistencia debe pertenecer al laboratorio de esa asistencia.
 - Una asistencia de estudiante exige un alumno; la de docente, un usuario; la de invitado, un nombre.
 - La hora de salida no puede ser anterior a la de entrada.
@@ -138,12 +145,19 @@ Para el equipo:
 Para el instituto:
 
 - ¿Cuántos laboratorios hay y cuántos equipos tiene cada uno?
-- ¿Quién captura el número de control al entrar: el alumno lo teclea, escanea su credencial, o lo registra el laboratorista? (Respondido el 10 de octubre de 2026: el alumno se identifica con su número de control, que es la matrícula, por ejemplo `23303080`.)
-- ¿Quién registra la salida, y qué pasa si alguien se va sin registrarla?
-- ¿Cada laboratorista atiende un laboratorio fijo o cualquiera?
-- ¿Quién aprueba las solicitudes de ingreso?
+- ¿El número de control siempre tiene 8 dígitos, como `23303080`? Se cree que sí.
+- ¿Cada laboratorista atiende un laboratorio fijo o cualquiera? Se cree que uno fijo.
+- ¿Quién aprueba las solicitudes de ingreso? Hoy el laboratorista solo pregunta si hay clase y deja quedarse a quien esté, salvo que le pida salir.
+- ¿Qué puede hacer cada tipo de usuario?
 - ¿De dónde sale la lista de alumnos y sus materias? ¿Se puede importar del sistema escolar cada semestre?
 - ¿Las prácticas son las mismas para todos los docentes de una materia?
-- ¿Qué turnos existen? El esquema supone matutino y vespertino.
 - ¿Qué reportes necesitan (por alumno, por materia, por laboratorio, por periodo) y en qué formato?
-- ¿Los invitados necesitan autorización previa?
+- ¿Entra a los laboratorios gente que no es alumno ni personal (visitas, cursos externos)? El esquema los contempla como "invitados" porque así venían en la base recibida.
+- ¿El alumno debe indicar qué equipo ocupa al registrar su entrada? Hoy es opcional.
+- ¿El sistema se instala en un servidor dentro del instituto o en Hostinger? De eso depende si se puede registrar una entrada desde fuera del plantel.
+
+Respondidas el 10 de octubre de 2026 por el responsable del backend:
+
+- El alumno se identifica con su número de control, que es la matrícula, y registra él mismo su entrada desde cualquier computadora o teléfono cuando el docente abre la clase.
+- La salida la registra el docente al cerrar la clase; el alumno solo registra su entrada.
+- Los turnos son matutino y vespertino.

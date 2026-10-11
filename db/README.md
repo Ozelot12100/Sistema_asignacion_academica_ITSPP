@@ -4,7 +4,7 @@ Esquema del sistema de control de asistencias a laboratorios. Motor: MariaDB 11.
 
 | Archivo | Contenido |
 |---|---|
-| [esquema.sql](esquema.sql) | Las 14 tablas, con sus llaves y restricciones |
+| [esquema.sql](esquema.sql) | Las 15 tablas, con sus llaves y restricciones |
 | [datos-iniciales.sql](datos-iniciales.sql) | El laboratorio de programación y sus 25 equipos |
 
 El porqué de cada tabla y la comparación con la base recibida están en [docs/modelo-de-datos.md](../docs/modelo-de-datos.md).

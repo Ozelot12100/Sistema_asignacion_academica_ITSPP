@@ -31,6 +31,7 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 | D19 | La bitácora se llena sola | Vigente |
 | D20 | Lo que tiene historial se desactiva, no se borra | Vigente |
 | D21 | El docente lleva la lista de sus cursos y las prácticas de sus materias | Provisional |
+| D22 | La entrada se registra por clase: el docente la abre y el alumno se registra solo | Vigente |
 
 ## D1. Se continúa el sistema existente en lugar de empezar de cero
 
@@ -68,7 +69,7 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Descartado.** Aplicaciones nativas (Flutter, React Native): solo se justifican con notificaciones avanzadas, uso sin conexión o acceso al hardware del teléfono.
 
-**Pendiente de diseño.** Desde qué dispositivo se registra la entrada. El alumno se identifica con su número de control (la matrícula).
+**Registro de entrada.** El alumno la registra desde cualquier computadora o teléfono con su número de control. Ver D22.
 
 ## D6. El backend entrega también el frontend
 
@@ -138,7 +139,7 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 ## D13. El esquema de la base de datos se rediseña
 
-**Decisión.** Se crea un esquema nuevo de 14 tablas en lugar de usar el recibido. Está en [db/esquema.sql](../db/esquema.sql) y explicado en [modelo-de-datos.md](modelo-de-datos.md).
+**Decisión.** Se crea un esquema nuevo de 15 tablas en lugar de usar el recibido. Está en [db/esquema.sql](../db/esquema.sql) y explicado en [modelo-de-datos.md](modelo-de-datos.md).
 
 **Por qué.** La base recibida duplicaba los datos del alumno en cada asistencia, casi no tenía relaciones entre tablas, usaba texto libre para laboratorios y carreras, separaba las asistencias en dos tablas y repartía las cuentas en cuatro. Eso produce datos contradictorios y reportes poco confiables conforme pasa el tiempo.
 
@@ -218,14 +219,28 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Regla relacionada.** Un curso solo se asigna a un docente con la cuenta activa, pero lo conserva si la cuenta se desactiva después, para no perder quién lo impartió.
 
+## D22. La entrada se registra por clase: el docente la abre y el alumno se registra solo
+
+**Decisión.** El docente abre una clase de su curso en un laboratorio. Mientras está abierta, cada alumno inscrito registra su entrada con su número de control, sin iniciar sesión, desde cualquier computadora o teléfono. Al cerrar la clase, el sistema registra la salida de todos. El alumno no registra su salida.
+
+**Por qué.** Así lo definió el responsable del backend el 10 de octubre de 2026, a partir de cómo se usan los laboratorios. Evita que el laboratorista capture a cada alumno y que haya salidas sin registrar.
+
+**Cómo se evita el registro indebido.** Solo se acepta a un alumno activo, inscrito en un curso que tenga la clase abierta en ese momento, y que no esté ya dentro. La ruta tiene un límite de intentos por dirección.
+
+**Riesgo conocido.** Quien conozca el número de control de un compañero puede registrarlo aunque no esté presente, y si el sistema queda accesible desde internet puede hacerlo desde fuera del plantel. Si eso resulta un problema, la solución prevista es un código de clase que el docente muestra en el aula.
+
+**Reglas.** Un laboratorio tiene a lo más una clase abierta, y un curso también; la base lo hace cumplir. La clase la abre el docente del curso o el administrador, y la cierra cualquiera de ellos o el laboratorista, para poder liberar el laboratorio si el docente se fue sin cerrarla.
+
+**Pendiente.** Si el alumno debe indicar el equipo que ocupa (hoy es opcional, tecleando su etiqueta), y el uso del laboratorio fuera de clase, que se resolverá junto con las solicitudes de ingreso.
+
 ## Decisiones abiertas
 
 | Tema | Qué falta para decidir |
 |---|---|
 | Aprobación del esquema | Revisión del equipo |
 | Nombre del repositorio en GitHub | Acordarlo en el equipo |
-| Cómo se registra la entrada del alumno | Se identifica con su número de control (la matrícula); falta definir quién lo captura y desde qué dispositivo |
+| Uso del laboratorio fuera de clase | Respuesta del instituto sobre quién lo autoriza |
 | Permisos definitivos de cada rol | Respuesta del instituto |
-| Dónde se aloja el sistema | Confirmar servidor de la universidad o Hostinger, y su sistema operativo |
+| Dónde se aloja el sistema | Se dijo a la vez que el servidor será local, solo dentro del instituto, y que se instalará en Hostinger; hay que confirmar cuál |
 | Subir a .NET 10 | Instalar el SDK en los equipos de desarrollo |
 | Quién lleva el frontend | Definirlo en el equipo |
