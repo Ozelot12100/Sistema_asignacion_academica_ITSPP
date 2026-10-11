@@ -142,19 +142,7 @@ Para el equipo:
 - ¿La base recibida es la que usa el sistema en producción, o una nueva? Sus registros son todos del 3 de octubre de 2026.
 - ¿Dónde está el código del sistema actual? No está en este repositorio.
 
-Para el instituto:
-
-- ¿Cuántos laboratorios hay y cuántos equipos tiene cada uno?
-- ¿El número de control siempre tiene 8 dígitos, como `23303080`? Se cree que sí.
-- ¿Cada laboratorista atiende un laboratorio fijo o cualquiera? Se cree que uno fijo.
-- ¿Quién aprueba las solicitudes de ingreso? Hoy el laboratorista solo pregunta si hay clase y deja quedarse a quien esté, salvo que le pida salir.
-- ¿Qué puede hacer cada tipo de usuario?
-- ¿De dónde sale la lista de alumnos y sus materias? ¿Se puede importar del sistema escolar cada semestre?
-- ¿Las prácticas son las mismas para todos los docentes de una materia?
-- ¿Qué reportes necesitan (por alumno, por materia, por laboratorio, por periodo) y en qué formato?
-- ¿Entra a los laboratorios gente que no es alumno ni personal (visitas, cursos externos)? El esquema los contempla como "invitados" porque así venían en la base recibida.
-- ¿El alumno debe indicar qué equipo ocupa al registrar su entrada? Hoy es opcional.
-- ¿El sistema se instala en un servidor dentro del instituto o en Hostinger? De eso depende si se puede registrar una entrada desde fuera del plantel.
+Para el instituto: están en [preguntas-para-el-instituto.md](preguntas-para-el-instituto.md), redactadas para entregarse al personal. Lo que el equipo cree saber, sin confirmar: el número de control tiene 8 dígitos, cada laboratorista atiende un laboratorio fijo, y hoy el laboratorista solo pregunta si hay clase y deja quedarse a quien esté.
 
 Respondidas el 10 de octubre de 2026 por el responsable del backend:
 

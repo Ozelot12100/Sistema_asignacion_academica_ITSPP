@@ -65,6 +65,7 @@ dotnet run --project api/Asistencias.Api
 Toda la documentación arquitectónica está en la carpeta `docs/`:
 * `docs/estado-actual.md`: Qué funciona y qué falta.
 * `docs/modelo-de-datos.md`: Modelo relacional y reglas de negocio.
+* `docs/preguntas-para-el-instituto.md`: Preguntas pendientes para el personal del ITSPP; ahí se anotan las respuestas.
 * `docs/decisiones.md`: Registro de decisiones técnicas (ADR) y justificaciones.
 * `docs/stack-tecnologico.md`: Justificación del stack elegido vs descartados.
 * `docs/metodologia-de-trabajo.md`: Convenciones, ramas y flujo de trabajo.
