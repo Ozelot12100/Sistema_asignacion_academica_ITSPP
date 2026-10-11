@@ -12,8 +12,8 @@ Guía de contexto y trabajo para asistentes de desarrollo (Claude Code / Antigra
 
 * **Backend:** .NET 9 (C# 13), ASP.NET Core Minimal APIs, EF Core 9 con Pomelo (`Pomelo.EntityFrameworkCore.MySql`), Scalar para documentación OpenAPI interactiva (`/scalar/v1`).
 * **Base de datos:** MariaDB 11.8 / MySQL 9.4. Esquema relacional de 15 tablas en `db/esquema.sql` (utf8mb4, snake_case) y datos iniciales en `db/datos-iniciales.sql`.
-* **Pruebas:** xUnit en `api/Asistencias.Tests` (94 pruebas automáticas que cubren autenticación, roles, catálogos, alumnos, cursos, inscripciones, prácticas, clases, registro de entrada y bitácora).
-* **Frontend:** Carpeta `web/`, pendiente de iniciar en React + TypeScript + Vite.
+* **Pruebas:** xUnit en `api/Asistencias.Tests` (111 pruebas automáticas que cubren autenticación, roles, catálogos, alumnos, cursos, inscripciones, prácticas, clases, registro de entrada, listas de asistencia y bitácora).
+* **Frontend:** Carpeta `web/`, en React 19 + TypeScript + Vite + Tailwind, con React Router, TanStack Query y tipos generados con openapi-typescript (`npm run generar-api`). Ver `web/README.md`.
 
 ## 3. Comandos Frecuentes
 
@@ -52,13 +52,16 @@ dotnet run --project api/Asistencias.Api
   * Gestión de alumnos con búsqueda paginada por matrícula o nombre.
   * Cursos, inscripciones de alumnos y prácticas por materia (`api/Asistencias.Api/Cursos/`).
   * Registro de entrada por clase (`api/Asistencias.Api/Clases/`): el docente abre la clase, el alumno inscrito registra su entrada con su número de control sin iniciar sesión (`POST /api/registro/entrada`), y al cerrar la clase se registra la salida de todos.
-  * Bitácora de auditoría automática ante altas, bajas y modificaciones.
-  * 94 pruebas automáticas pasando.
+  * Lista de asistencia de una clase con faltas, resumen de asistencia por curso, y correcciones (registrar a mano, quitar una entrada).
+  * Carga de alumnos en lote (`POST /api/alumnos/lote`) e inscripción de una lista de números de control.
+  * Bitácora de auditoría automática ante altas, bajas y modificaciones, y su consulta (`GET /api/bitacora`, solo administrador).
+  * Frontend: registro de entrada del alumno, inicio de sesión, panel del docente y pantalla de la clase.
+  * 111 pruebas automáticas pasando en la API y 5 en el frontend.
 * **Siguientes tareas por construir (en orden de prioridad):**
-  1. Reportes de asistencia (por clase, curso, alumno y laboratorio) y consulta de la bitácora.
-  2. Uso del laboratorio fuera de clase: solicitudes de ingreso y notificaciones de administración.
-  3. Carga masiva de alumnos desde archivo.
-  4. Iniciar el frontend en `web/` con React + Vite.
+  1. Pantallas de administración en el frontend: alumnos (con carga desde archivo), cursos e inscripciones, catálogos y usuarios.
+  2. Reportes: historial de un alumno, uso de cada laboratorio y de los equipos, y exportación a Excel y PDF.
+  3. Que la API sirva el frontend compilado en producción (D6) y el despliegue.
+* **En espera de respuestas del instituto** (`docs/preguntas-para-el-instituto.md`): código de clase para el registro, uso del laboratorio fuera de clase y solicitudes de ingreso, permisos definitivos por rol.
 
 ## 6. Documentación Detallada
 

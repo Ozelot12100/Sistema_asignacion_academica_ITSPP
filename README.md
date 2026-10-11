@@ -10,7 +10,7 @@ El repositorio todavía se llama `Sistema_asignacion_academica_ITSPP` por el pro
 |---|---|
 | [api/](api/) | API en C# (ASP.NET Core) y sus pruebas |
 | [db/](db/) | Esquema de la base de datos y datos iniciales |
-| [web/](web/) | Frontend en React (aún sin iniciar) |
+| [web/](web/) | Frontend en React: registro de entrada del alumno y pantallas del docente |
 | [docs/](docs/) | Modelo de datos, decisiones, stack, forma de trabajo y estado del proyecto |
 
 ## Documentación
@@ -47,6 +47,10 @@ Requisitos: SDK de .NET 9 y Docker.
    Al arrancar, si no existe ningún administrador, la API crea uno con ese correo y contraseña.
 
 3. Ejecuta `dotnet run`. La API queda en `http://localhost:5270` y su documentación interactiva en `http://localhost:5270/scalar/v1`.
+
+4. Para la aplicación web, en otra terminal: `cd web`, `npm install` y `npm run dev`. Queda en `http://localhost:5173`. Más detalle en [web/README.md](web/README.md).
+
+Si no usas Docker, sirve cualquier servidor MariaDB (no MySQL: la API usa `RETURNING`). Ajusta el puerto y la contraseña en la cadena de conexión.
 
 ## Pruebas
 

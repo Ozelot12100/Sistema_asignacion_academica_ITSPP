@@ -199,7 +199,9 @@ Las decisiones sobre herramientas concretas están en [stack-tecnologico.md](sta
 
 **Qué se anota.** La acción, la tabla, el registro y los nombres de los campos que cambiaron. No se guardan los valores, para que la bitácora nunca contenga contraseñas ni datos personales.
 
-**Qué no se anota.** Las asistencias, porque cada una ya es su propio registro.
+**Qué no se anota.** Las asistencias, porque cada una ya es su propio registro. La excepción es cuando se borra una, que sí se anota, porque ahí el registro desaparece.
+
+**Consulta.** Solo el administrador la consulta. No se puede editar ni borrar desde la API.
 
 ## D20. Lo que tiene historial se desactiva, no se borra
 
