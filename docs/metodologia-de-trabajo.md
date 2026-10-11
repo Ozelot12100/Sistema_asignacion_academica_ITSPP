@@ -4,7 +4,7 @@ Cómo se organiza el equipo y cómo entra un cambio al repositorio.
 
 **Estado: propuesta.** Las reglas técnicas (ramas, revisiones, secretos) están listas para usarse. La parte de organización (tablero, reuniones, reparto de responsabilidades) falta acordarla entre los cuatro integrantes.
 
-Última actualización: 4 de octubre de 2026.
+Última actualización: 10 de octubre de 2026.
 
 ## Equipo y responsabilidades
 
@@ -38,7 +38,7 @@ Se propone un flujo tipo Kanban, sin sprints fijos, porque el equipo trabaja en 
 
 Reglas:
 
-- Nadie sube directo a `main`.
+- El responsable del backend (Ozelot12100) puede subir directo a `main`, porque es quien desarrolla la mayor parte del sistema. Los demás integrantes entran por *pull request*.
 - `main` siempre debe compilar y pasar las pruebas.
 - Un *pull request* resuelve una sola cosa. Si crece demasiado, se parte.
 
@@ -57,7 +57,7 @@ Si hace falta contexto, va en el cuerpo del mensaje, separado por una línea en 
 - Las pruebas pasan, y hay pruebas nuevas si se tocaron reglas de negocio o permisos.
 - Se probó a mano el caso principal.
 - La documentación se actualizó si cambió una decisión, una ruta o la forma de ejecutar el proyecto.
-- Otra persona lo revisó.
+- Otra persona lo revisó, si el cambio entró por *pull request*.
 
 ## Convenciones de código
 
