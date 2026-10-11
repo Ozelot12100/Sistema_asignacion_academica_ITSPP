@@ -50,12 +50,12 @@ public static class ClasesEndpoints
         grupo.MapGet("/{id:int}", async (int id, AsistenciasDbContext db) =>
             await ADto(db.Clases.Where(c => c.Id == id)).SingleOrDefaultAsync() is { } clase
                 ? Results.Ok(clase)
-                : Persistencia.NoExiste("La clase"));
+                : Persistencia.NoExiste("La clase")).Produces<ClaseDto>();
 
         grupo.MapGet("/{id:int}/asistencias", async (int id, AsistenciasDbContext db) =>
             await db.Clases.AnyAsync(c => c.Id == id)
                 ? Results.Ok(await AsistentesAsync(db, id))
-                : Persistencia.NoExiste("La clase"));
+                : Persistencia.NoExiste("La clase")).Produces<List<AsistenteDto>>();
 
         // La lista del grupo con quién asistió y quién faltó
         grupo.MapGet("/{id:int}/lista", async (int id, AsistenciasDbContext db) =>
@@ -68,7 +68,7 @@ public static class ClasesEndpoints
                 .Select(i => new AlumnoDeLista(i.Alumno!.Id, i.Alumno.Matricula, i.Alumno.Nombre, i.Alumno.Apellido))
                 .ToListAsync();
             return Results.Ok(ListaDeAsistencia.Armar(inscritos, await AsistentesAsync(db, id)));
-        });
+        }).Produces<ListaDeClaseDto>();
 
         grupo.MapPost("/", async (ClaseEntrada entrada, ClaimsPrincipal principal, AsistenciasDbContext db) =>
         {
@@ -107,7 +107,7 @@ public static class ClasesEndpoints
             // Si dos personas abren a la vez, la base rechaza a la segunda
             if (await db.GuardarAsync() is { } conflicto) return conflicto;
             return Results.Created($"/api/clases/{clase.Id}", await ADto(db.Clases.Where(c => c.Id == clase.Id)).SingleAsync());
-        });
+        }).Produces<ClaseDto>(StatusCodes.Status201Created);
 
         // Cerrar la clase registra la salida de todos los que seguían dentro
         grupo.MapPost("/{id:int}/cerrar", async (int id, ClaimsPrincipal principal, AsistenciasDbContext db) =>
@@ -128,7 +128,7 @@ public static class ClasesEndpoints
             await transaccion.CommitAsync();
 
             return Results.Ok(await ADto(db.Clases.Where(c => c.Id == id)).SingleAsync());
-        });
+        }).Produces<ClaseDto>();
 
         // Para el alumno que no pudo registrarse solo: lo registra quien lleva la clase
         grupo.MapPost("/{id:int}/asistencias", async (
@@ -153,7 +153,7 @@ public static class ClasesEndpoints
                 return Conflicto("El alumno no está inscrito en el curso.");
 
             return await RegistrarAsync(db, alumno, clase, etiqueta);
-        });
+        }).Produces<EntradaRegistradaDto>();
 
         // Para quitar una entrada registrada por error. Queda anotado en la bitácora quién la quitó.
         grupo.MapDelete("/{id:int}/asistencias/{asistenciaId:long}", async (
@@ -190,7 +190,7 @@ public static class ClasesEndpoints
             if (clase is null) return Conflicto("No tienes ninguna clase abierta en este momento.");
 
             return await RegistrarAsync(db, alumno, clase, etiqueta);
-        }).WithTags("Registro").RequireRateLimiting(LimiteRegistro);
+        }).WithTags("Registro").RequireRateLimiting(LimiteRegistro).Produces<EntradaRegistradaDto>();
 
         // Asistencias y faltas de cada alumno inscrito, sobre las clases que se han dado del curso.
         // Las inscripciones no guardan fecha: a quien se inscribió tarde le cuentan como faltas las clases anteriores.
@@ -223,7 +223,7 @@ public static class ClasesEndpoints
                         ListaDeAsistencia.Porcentaje(suyas, totalClases));
                 })
                 .ToList()));
-        }).WithTags("Clases").RequireAuthorization();
+        }).WithTags("Clases").RequireAuthorization().Produces<AsistenciaCursoDto>();
     }
 
     private sealed record ClaseAbierta(

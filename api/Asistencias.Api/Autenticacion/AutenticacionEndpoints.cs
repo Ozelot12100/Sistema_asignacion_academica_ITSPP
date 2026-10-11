@@ -22,7 +22,7 @@ public static class AutenticacionEndpoints
     {
         var grupo = app.MapGroup("/api/auth").WithTags("Autenticación");
 
-        grupo.MapPost("/login", Login).RequireRateLimiting(LimiteLogin);
+        grupo.MapPost("/login", Login).RequireRateLimiting(LimiteLogin).Produces<UsuarioActualDto>();
 
         grupo.MapPost("/logout", async (HttpContext http) =>
         {
@@ -34,7 +34,7 @@ public static class AutenticacionEndpoints
         {
             var usuario = await db.Usuarios.AsNoTracking().SingleAsync(u => u.Id == principal.IdUsuario());
             return Results.Ok(ADto(usuario));
-        }).RequireAuthorization();
+        }).RequireAuthorization().Produces<UsuarioActualDto>();
 
         grupo.MapPut("/password", async (
             CambioPasswordDto dto, ClaimsPrincipal principal, AsistenciasDbContext db, IPasswordHasher<Usuario> hasher) =>
