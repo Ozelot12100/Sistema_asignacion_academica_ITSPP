@@ -5,7 +5,7 @@ Guía de contexto y trabajo para asistentes de desarrollo (Claude Code / Antigra
 ## 1. Contexto y Propósito
 
 * **Proyecto real:** Sistema de control de acceso y asistencias a laboratorios de cómputo del Instituto Tecnológico Superior de Puerto Peñasco (ITSPP). Registra entradas/salidas de alumnos, docentes e invitados, asignación de equipos de cómputo, solicitudes de ingreso, prácticas por materia y bitácora de auditoría.
-* **Nombre del repositorio:** Se llama `Sistema_asignacion_academica_ITSPP` por el prototipo inicial de horarios con el que se recibió el repo. Ese código inicial se retiró y fue sustituido en la rama `reorganizacion-y-base` por la API actual de asistencias en `api/`.
+* **Nombre del repositorio:** Se llama `Sistema_asignacion_academica_ITSPP` por el prototipo inicial de horarios con el que se recibió el repo. Ese código inicial se retiró y fue sustituido por la API actual de asistencias en `api/`, que ya está en `main`.
 * **Equipo:** David Alberto Ramírez Vargas (backend, C#), Andrés, Jorge y Tadeo.
 
 ## 2. Stack Tecnológico

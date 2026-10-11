@@ -64,9 +64,9 @@ Medidas de seguridad ya incluidas:
 ## Qué se verificó y qué no
 
 - **Verificado.** 79 pruebas automáticas pasan. Cubren inicio y cierre de sesión, invalidación de sesiones, permisos de cada rol, validación de datos, duplicados, borrados bloqueados, búsqueda de alumnos, estado de los equipos, cursos, inscripciones, prácticas y la bitácora. El inicio de sesión, el límite de intentos y el flujo de cursos, inscripciones y prácticas también se probaron a mano con la API en marcha.
-- **Versión de la base en las pruebas.** Las primeras 52 se corrieron contra MariaDB 11.8, la misma versión del servidor actual. Desde el 10 de octubre de 2026 las 79 se corren en la máquina de desarrollo contra MariaDB 11.5; contra 11.8 falta volver a correrlas (lo hará la integración continua).
+- **Versión de la base en las pruebas.** La integración continua corre las 79 contra MariaDB 11.8, la misma versión del servidor actual; pasaron en `main` el 10 de octubre de 2026. En la máquina de desarrollo se corren contra MariaDB 11.5.
 - **Verificado en la base.** Las restricciones del esquema rechazan dos personas en un mismo equipo, un alumno dentro dos veces, un equipo de otro laboratorio, una salida anterior a la entrada y una solicitud resuelta sin fecha.
-- **Sin verificar.** La integración continua aún no ha corrido en GitHub, porque solo corre en un *pull request* o en `main` y todavía no se ha abierto ninguno. Nada se ha desplegado en un servidor.
+- **Sin verificar.** Nada se ha desplegado en un servidor.
 
 ## Qué falta
 
