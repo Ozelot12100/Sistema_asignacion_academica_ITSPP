@@ -15,6 +15,7 @@ El repositorio todavía se llama `Sistema_asignacion_academica_ITSPP` por el pro
 
 ## Documentación
 
+- [Guía para asistentes (CLAUDE.md)](CLAUDE.md): contexto, stack y pautas para Claude Code / Antigravity.
 - [Estado actual](docs/estado-actual.md): qué funciona y qué falta.
 - [Modelo de datos](docs/modelo-de-datos.md): qué hace el sistema y cómo queda la base de datos.
 - [Decisiones del proyecto](docs/decisiones.md): qué se decidió y por qué.
