@@ -21,6 +21,9 @@ public static class Sesion
     public static int IdUsuario(this ClaimsPrincipal principal) =>
         int.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    public static Rol RolUsuario(this ClaimsPrincipal principal) =>
+        Enum.Parse<Rol>(principal.FindFirstValue(ClaimTypes.Role)!, ignoreCase: true);
+
     public static void Configurar(CookieAuthenticationOptions options, bool esDesarrollo)
     {
         options.Cookie.Name = "asistencias_sesion";

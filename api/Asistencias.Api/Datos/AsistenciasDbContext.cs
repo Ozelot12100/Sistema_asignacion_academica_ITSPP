@@ -16,6 +16,9 @@ public class AsistenciasDbContext(
     public DbSet<Equipo> Equipos => Set<Equipo>();
     public DbSet<Alumno> Alumnos => Set<Alumno>();
     public DbSet<Materia> Materias => Set<Materia>();
+    public DbSet<Curso> Cursos => Set<Curso>();
+    public DbSet<Inscripcion> Inscripciones => Set<Inscripcion>();
+    public DbSet<Practica> Practicas => Set<Practica>();
     public DbSet<Asistencia> Asistencias => Set<Asistencia>();
     public DbSet<EntradaBitacora> Bitacora => Set<EntradaBitacora>();
 
@@ -29,6 +32,7 @@ public class AsistenciasDbContext(
         modelBuilder.Entity<Usuario>().Property(u => u.Rol).HasConversion(EnMinusculas<Rol>());
         modelBuilder.Entity<Alumno>().Property(a => a.Turno).HasConversion(EnMinusculas<Turno>());
         modelBuilder.Entity<Asistencia>().Property(a => a.TipoUsuario).HasConversion(EnMinusculas<TipoUsuario>());
+        modelBuilder.Entity<Inscripcion>().HasKey(i => new { i.CursoId, i.AlumnoId });
     }
 
     // Las columnas ENUM de la base guardan los valores en minúsculas

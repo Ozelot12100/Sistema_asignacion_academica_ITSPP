@@ -82,6 +82,39 @@ public class Materia
     public byte? Semestre { get; set; }
 }
 
+public class Curso
+{
+    public int Id { get; set; }
+    public int MateriaId { get; set; }
+    public Materia? Materia { get; set; }
+    public int PeriodoId { get; set; }
+    public Periodo? Periodo { get; set; }
+    public required string Grupo { get; set; }
+    public int? DocenteId { get; set; }
+    public Usuario? Docente { get; set; }
+    public int? LaboratorioId { get; set; }
+    public Laboratorio? Laboratorio { get; set; }
+    public List<Inscripcion> Inscripciones { get; set; } = [];
+}
+
+public class Inscripcion
+{
+    public int CursoId { get; set; }
+    public Curso? Curso { get; set; }
+    public int AlumnoId { get; set; }
+    public Alumno? Alumno { get; set; }
+}
+
+public class Practica
+{
+    public int Id { get; set; }
+    public int MateriaId { get; set; }
+    public int Numero { get; set; }
+    public required string Titulo { get; set; }
+    public string? Descripcion { get; set; }
+    public int? DuracionMinutos { get; set; }
+}
+
 public class Asistencia
 {
     public long Id { get; set; }
@@ -91,6 +124,8 @@ public class Asistencia
     public int? AlumnoId { get; set; }
     public int? UsuarioId { get; set; }
     public string? InvitadoNombre { get; set; }
+    public int? CursoId { get; set; }
+    public int? PracticaId { get; set; }
     public DateTime HoraEntrada { get; set; } = DateTime.UtcNow;
     public DateTime? HoraSalida { get; set; }
 }

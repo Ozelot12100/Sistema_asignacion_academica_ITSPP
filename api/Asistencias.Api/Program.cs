@@ -5,6 +5,7 @@ using Asistencias.Api.Alumnos;
 using Asistencias.Api.Autenticacion;
 using Asistencias.Api.Catalogos;
 using Asistencias.Api.Comun;
+using Asistencias.Api.Cursos;
 using Asistencias.Api.Datos;
 using Asistencias.Api.Laboratorios;
 using Asistencias.Api.Usuarios;
@@ -74,6 +75,8 @@ app.MapCarreras();
 app.MapPeriodos();
 app.MapMaterias();
 app.MapAlumnos();
+app.MapCursos();
+app.MapPracticas();
 
 await app.CrearAdminInicialAsync();
 
